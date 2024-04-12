@@ -15,24 +15,17 @@ jobs:
     runs-on: ${{ matrix.os }}
 
     strategy:
-      # Set fail-fast to false to ensure that feedback is delivered for all matrix combinations. Consider changing this to true when your workflow is stable.
+
       fail-fast: false
 
-      # Set up a matrix to run the following 3 configurations:
-      # 1. <Windows, Release, latest MSVC compiler toolchain on the default runner image, default generator>
-      # 2. <Linux, Release, latest GCC compiler toolchain on the default runner image, default generator>
-      # 3. <Linux, Release, latest Clang compiler toolchain on the default runner image, default generator>
-      #
-      # To add more build types (Release, Debug, RelWithDebInfo, etc.) customize the build_type list.
       matrix:
         os: [ubuntu-latest, windows-latest, macos-latest]
         build_type: [Release]
-        c_compiler: [gcc, cl]
         include:
           - os: windows-latest
             c_compiler: cl
             cpp_compiler: cl
-            artifact_name: BitLogin
+            artifact_name: BitLogin.exe
           - os: ubuntu-latest
             c_compiler: gcc
             cpp_compiler: g++
@@ -43,22 +36,20 @@ jobs:
             cpp_compiler: g++
             install-cmd: brew install fmt openssl
             artifact_name: BitLogin
-        exclude:
-          - os: windows-latest
-            c_compiler: gcc
-          - os: ubuntu-latest
-            c_compiler: cl
-          - os: macos-latest
-            c_compiler: cl
+
     steps:
     - uses: actions/checkout@v3
 
     - name: Set reusable strings
-      # Turn repeated input strings (such as the build output directory) into step outputs. These step outputs can be used throughout the workflow file.
       id: strings
       shell: bash
       run: |
         echo "build-output-dir=${{ github.workspace }}/build" >> "$GITHUB_OUTPUT"
+
+    - name: Set CMake version
+      uses: jwlawson/actions-setup-cmake@v2
+      with:
+        cmake-version: '3.29.0'
 
     - name: Install dependency (Ubuntu and MacOS)
       if: matrix.os != 'windows-latest'
@@ -66,9 +57,9 @@ jobs:
 
     - name: Install dependency (Windows)
       if: matrix.os == 'windows-latest'
-      run: vcpkg install 
+      run: 
 
-    - name: Configure CMake (Ubuntu and MacOS)
+    - name: CMake Configure (Ubuntu and macOS)
       if: matrix.os != 'windows-latest'
       run: >
         cmake -B ${{ steps.strings.outputs.build-output-dir }}
@@ -77,7 +68,7 @@ jobs:
         -DCMAKE_BUILD_TYPE=${{ matrix.build_type }}
         -S ${{ github.workspace }}
     
-    - name: Configure CMake (Windows)
+    - name: CMake Configure (Windows)
       if: matrix.os == 'windows-latest'
       run: >
         cmake -B ${{ steps.strings.outputs.build-output-dir }}
@@ -92,20 +83,20 @@ jobs:
       # Build your program with the given configuration. Note that --config is needed because the default Windows generator is a multi-config generator (Visual Studio generator).
       run: cmake --build ${{ steps.strings.outputs.build-output-dir }} --config ${{ matrix.build_type }}
 
-    - name: Upload binaries to release (Linux)
+    - name: Upload binaries to release (Ubuntu)
       uses: svenstaro/upload-release-action@v2
       if: matrix.os == 'ubuntu-latest'
       with:
-        asset_name: ${{ matrix.artifact_name }}_linux
+        asset_name: ${{ matrix.artifact_name }}_${{runner.os}}_${{runner.arch}}
         file: ${{ steps.strings.outputs.build-output-dir }}/${{ matrix.artifact_name }}
         tag: ${{ github.ref }}
         overwrite: true
 
-    - name: Upload binaries to release (MacOS)
+    - name: Upload binaries to release (macOS)
       uses: svenstaro/upload-release-action@v2
       if: matrix.os == 'macos-latest'
       with:
-        asset_name: ${{ matrix.artifact_name }}_macos
+        asset_name: ${{ matrix.artifact_name }}_${{runner.os}}_${{runner.arch}}
         file: ${{ steps.strings.outputs.build-output-dir }}/${{ matrix.artifact_name }}
         tag: ${{ github.ref }}
         overwrite: true
@@ -114,7 +105,7 @@ jobs:
       uses: svenstaro/upload-release-action@v2
       if: matrix.os == 'windows-latest'
       with:
-        asset_name: ${{ matrix.artifact_name }}_windows.exe
+        asset_name: ${{ matrix.artifact_name }}_${{runner.os}}_${{runner.arch}}.exe
         file: ${{ steps.strings.outputs.build-output-dir }}/${{ matrix.build_type }}/${{ matrix.artifact_name }}.exe
         tag: ${{ github.ref }}
         overwrite: true

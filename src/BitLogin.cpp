@@ -10,7 +10,6 @@ int main(int argc, char *argv[]) {
         
         arg_parser(argc, argv, action, username, password);
 
-
         // Do action
         BitSrunUser user(username, password);
         if (action == "login") {

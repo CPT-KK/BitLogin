@@ -19,6 +19,13 @@ set(CMAKE_CXX_STANDARD 20)
 
 project(BitLogin)
 
+# If use vcpkg, set static link
+if (VCPKG_TARGET_TRIPLET MATCHES "-static")
+    string(REPLACE "/MD" "/MT" CMAKE_CXX_FLAGS ${CMAKE_CXX_FLAGS})
+    string(REPLACE "/MD" "/MT" CMAKE_CXX_FLAGS_DEBUG ${CMAKE_CXX_FLAGS_DEBUG})
+    string(REPLACE "/MD" "/MT" CMAKE_CXX_FLAGS_RELEASE ${CMAKE_CXX_FLAGS_RELEASE})
+endif ()
+
 # ===================================
 # Begin finding dependencies
 # ===================================
@@ -55,3 +62,8 @@ target_link_libraries(${PROJECT_NAME} PRIVATE OpenSSL::SSL OpenSSL::Crypto)
 target_link_libraries(${PROJECT_NAME} PRIVATE fmt::fmt)
 target_link_libraries(${PROJECT_NAME} PRIVATE httplib::httplib)
 target_link_libraries(${PROJECT_NAME} PRIVATE argparse::argparse)
+
+# Echo output name
+add_custom_command(TARGET ${PROJECT_NAME} POST_BUILD
+                   COMMAND ${CMAKE_COMMAND} -E echo
+                   "Executable path: $<TARGET_FILE:${PROJECT_NAME}>")

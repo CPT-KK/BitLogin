@@ -7,6 +7,9 @@ on:
     types:
       - created
 
+env:
+  VCPKG_ROOT: C:/vcpkg
+
 jobs:
   build:
     runs-on: ${{ matrix.os }}
@@ -29,7 +32,7 @@ jobs:
           - os: windows-latest
             c_compiler: cl
             cpp_compiler: cl
-            artifact_name: BitLogin.exe
+            artifact_name: BitLogin
           - os: ubuntu-latest
             c_compiler: gcc
             cpp_compiler: g++
@@ -89,16 +92,23 @@ jobs:
       # Build your program with the given configuration. Note that --config is needed because the default Windows generator is a multi-config generator (Visual Studio generator).
       run: cmake --build ${{ steps.strings.outputs.build-output-dir }} --config ${{ matrix.build_type }}
 
-    - name: Upload binaries to release (Ubuntu and MacOS)
-      uses: actions/upload-artifact@v2
-      if: matrix.os != 'windows-latest'
+    - name: Upload binaries to release (Linux)
+      uses: actions/upload-artifact@v3
+      if: matrix.os == 'ubuntu-latest'
       with:
-        name: ${{ matrix.artifact_name }}
+        name: ${{ matrix.artifact_name }}_linux
+        path: ${{ steps.strings.outputs.build-output-dir }}/${{ matrix.artifact_name }}
+
+    - name: Upload binaries to release (MacOS)
+      uses: actions/upload-artifact@v3
+      if: matrix.os == 'macos-latest'
+      with:
+        name: ${{ matrix.artifact_name }}_macos
         path: ${{ steps.strings.outputs.build-output-dir }}/${{ matrix.artifact_name }}
 
     - name: Upload binaries to release (Windows)
-      uses: actions/upload-artifact@v2
+      uses: actions/upload-artifact@v3
       if: matrix.os == 'windows-latest'
       with:
-        name: ${{ matrix.artifact_name }}
-        path: ${{ steps.strings.outputs.build-output-dir }}/${{ matrix.build_type }}/${{ matrix.artifact_name }}
+        name: ${{ matrix.artifact_name }}_windows.exe
+        path: ${{ steps.strings.outputs.build-output-dir }}/${{ matrix.build_type }}/${{ matrix.artifact_name }}.exe

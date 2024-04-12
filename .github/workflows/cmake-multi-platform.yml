@@ -63,13 +63,7 @@ jobs:
 
     - name: Install dependency (Windows)
       if: matrix.os == 'windows-latest'
-      run: |
-        git clone https://github.com/microsoft/vcpkg.git
-        .\vcpkg\bootstrap-vcpkg.bat
-        .\vcpkg\vcpkg integrate install
-        .\vcpkg\vcpkg install fmt:x64-windows-static
-        .\vcpkg\vcpkg install cpp-httplib:x64-windows-static
-        .\vcpkg\vcpkg install argparse:x64-windows-static
+      run: vcpkg install 
 
     - name: Configure CMake (Ubuntu and MacOS)
       if: matrix.os != 'windows-latest'
@@ -96,19 +90,15 @@ jobs:
       run: cmake --build ${{ steps.strings.outputs.build-output-dir }} --config ${{ matrix.build_type }}
 
     - name: Upload binaries to release (Ubuntu and MacOS)
-      uses: svenstaro/upload-release-action@v2
+      uses: actions/upload-artifact@v2
       if: matrix.os != 'windows-latest'
       with:
-        repo_token: ${{ secrets.GITHUB_TOKEN }}
-        file: ${{ steps.strings.outputs.build-output-dir }}/${{ matrix.artifact_name }}
-        asset_name: ${{ matrix.artifact_name }}
-        tag: ${{ github.ref }}
+        name: ${{ matrix.artifact_name }}
+        path: ${{ steps.strings.outputs.build-output-dir }}/${{ matrix.artifact_name }}
 
     - name: Upload binaries to release (Windows)
-      uses: svenstaro/upload-release-action@v2
+      uses: actions/upload-artifact@v2
       if: matrix.os == 'windows-latest'
       with:
-        repo_token: ${{ secrets.GITHUB_TOKEN }}
-        file: ${{ steps.strings.outputs.build-output-dir }}/${{ matrix.build_type }}/${{ matrix.artifact_name }}
-        asset_name: ${{ matrix.artifact_name }}
-        tag: ${{ github.ref }}
+        name: ${{ matrix.artifact_name }}
+        path: ${{ steps.strings.outputs.build-output-dir }}/${{ matrix.build_type }}/${{ matrix.artifact_name }}

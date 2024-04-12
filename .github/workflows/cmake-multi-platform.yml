@@ -93,22 +93,28 @@ jobs:
       run: cmake --build ${{ steps.strings.outputs.build-output-dir }} --config ${{ matrix.build_type }}
 
     - name: Upload binaries to release (Linux)
-      uses: actions/upload-artifact@v3
+      uses: svenstaro/upload-release-action@v2
       if: matrix.os == 'ubuntu-latest'
       with:
-        name: ${{ matrix.artifact_name }}_linux
-        path: ${{ steps.strings.outputs.build-output-dir }}/${{ matrix.artifact_name }}
+        asset_name: ${{ matrix.artifact_name }}_linux
+        file: ${{ steps.strings.outputs.build-output-dir }}/${{ matrix.artifact_name }}
+        tag: ${{ github.ref }}
+        overwrite: true
 
     - name: Upload binaries to release (MacOS)
-      uses: actions/upload-artifact@v3
+      uses: svenstaro/upload-release-action@v2
       if: matrix.os == 'macos-latest'
       with:
-        name: ${{ matrix.artifact_name }}_macos
-        path: ${{ steps.strings.outputs.build-output-dir }}/${{ matrix.artifact_name }}
+        asset_name: ${{ matrix.artifact_name }}_macos
+        file: ${{ steps.strings.outputs.build-output-dir }}/${{ matrix.artifact_name }}
+        tag: ${{ github.ref }}
+        overwrite: true
 
     - name: Upload binaries to release (Windows)
-      uses: actions/upload-artifact@v3
+      uses: svenstaro/upload-release-action@v2
       if: matrix.os == 'windows-latest'
       with:
-        name: ${{ matrix.artifact_name }}_windows.exe
-        path: ${{ steps.strings.outputs.build-output-dir }}/${{ matrix.build_type }}/${{ matrix.artifact_name }}.exe
+        asset_name: ${{ matrix.artifact_name }}_windows.exe
+        file: ${{ steps.strings.outputs.build-output-dir }}/${{ matrix.build_type }}/${{ matrix.artifact_name }}.exe
+        tag: ${{ github.ref }}
+        overwrite: true

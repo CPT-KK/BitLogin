@@ -30,17 +30,17 @@ jobs:
             c_compiler: cl
             cpp_compiler: cl
             install-cmd: vcpkg install
-            exe_name: BitSrun.exe
+            artifact_name: BitSrun.exe
           - os: ubuntu-latest
             c_compiler: gcc
             cpp_compiler: g++
             install-cmd: sudo apt-get update && sudo apt-get install -y libssl-dev libfmt-dev
-            exe_name: BitSrun
+            artifact_name: BitSrun
           - os: macos-latest
             c_compiler: gcc
             cpp_compiler: g++
             install-cmd: brew install fmt openssl
-            exe_name: BitSrun
+            artifact_name: BitSrun
         exclude:
           - os: windows-latest
             c_compiler: gcc
@@ -88,6 +88,6 @@ jobs:
       uses: svenstaro/upload-release-action@v2
       with:
         repo_token: ${{ secrets.GITHUB_TOKEN }}
-        file: ${{ steps.strings.outputs.build-output-dir }}/${{ matrix.exe_name }}
-        asset_name: ${{ matrix.exe_name }}
+        file: target/release/${{ matrix.artifact_name }}
+        asset_name: ${{ matrix.artifact_name }}
         tag: ${{ github.ref }}

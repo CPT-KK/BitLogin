@@ -1,7 +1,5 @@
 {
   "dependencies": [
-    "argparse",
-    "cpp-httplib",
     "fmt",
     "openssl"
   ]

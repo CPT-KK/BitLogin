@@ -29,16 +29,22 @@ jobs:
           - os: windows-latest
             c_compiler: cl
             cpp_compiler: cl
-            install-cmd: vcpkg install fmt
+            install-cmd: vcpkg install
           - os: ubuntu-latest
             c_compiler: gcc
             cpp_compiler: g++
-            install-cmd: sudo apt-get update && sudo apt-get install -y libfmt-dev
+            install-cmd: sudo apt-get update && sudo apt-get install -y libssl-dev libfmt-dev
           - os: macos-latest
             c_compiler: gcc
             cpp_compiler: g++
-            install-cmd: brew install fmt
-
+            install-cmd: brew install fmt openssl
+        exclude:
+          - os: windows-latest
+            c_compiler: gcc
+          - os: ubuntu-latest
+            c_compiler: cl
+          - os: macos-latest
+            c_compiler: cl
     steps:
     - uses: actions/checkout@v3
 

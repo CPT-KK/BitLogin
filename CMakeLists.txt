@@ -29,9 +29,9 @@ find_package(fmt CONFIG REQUIRED)
 
 # For argparse and httplib, we need to get them from github (on linux and apple) or use vcpkg (on windows)
 # Change the url if needed
-if (CMAKE_HOST_SYSTEM_NAME MATCHES "Linux" OR CMAKE_HOST_SYSTEM_NAME MATCHES "Apple")
-    get_from_github(argparse git@github.com:p-ranav/argparse.git)
-    get_from_github(httplib git@github.com:yhirose/cpp-httplib.git)
+if (CMAKE_HOST_SYSTEM_NAME MATCHES "Linux" OR CMAKE_HOST_SYSTEM_NAME MATCHES "Darwin")
+    get_from_github(argparse https://github.com/p-ranav/argparse.git)
+    get_from_github(httplib https://github.com/yhirose/cpp-httplib.git)
 elseif (CMAKE_HOST_SYSTEM_NAME MATCHES "Windows")
     find_package(httplib CONFIG REQUIRED)
     find_package(argparse CONFIG REQUIRED)

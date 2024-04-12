@@ -1,6 +1,4 @@
-# This starter workflow is for a CMake project running on multiple platforms. There is a different starter workflow if you just want a single platform.
-# See: https://github.com/actions/starter-workflows/blob/main/ci/cmake-single-platform.yml
-name: CMake on multiple platforms v1.0
+name: BitLogin Release
 
 on:
   release:
@@ -26,6 +24,8 @@ jobs:
             install-cmd: echo "No dependencies to install on Windows."
             platform_name: windows
             arch_name: x86_64
+            build_path_prefix: matrix.build_type/
+            artifact_name: BitLogin
             artifact_suffix: .exe
           - os: ubuntu-latest
             c_compiler: gcc
@@ -33,13 +33,17 @@ jobs:
             install-cmd: sudo apt-get update && sudo apt-get install -y libssl-dev libfmt-dev
             platform_name: ubuntu
             arch_name: x86_64
+            build_path_prefix: ""
+            artifact_name: BitLogin
             artifact_suffix: ""
           - os: macos-latest
             c_compiler: gcc
             cpp_compiler: g++
             install-cmd: brew install fmt openssl
-            platform_name: macOS
+            platform_name: macos
             arch_name: x86_64
+            build_path_prefix: ""
+            artifact_name: BitLogin
             artifact_suffix: ""
 
     steps:
@@ -80,8 +84,8 @@ jobs:
     - name: Upload binaries to release
       uses: svenstaro/upload-release-action@v2
       with:
-        asset_name: ${{ env.artifact_name }}_${{ matrix.platform_name }}_${{ matrix.arch_name }}${{ matrix.artifact_suffix }}
-        file: ${{ github.workspace }}/build/${{ env.artifact_name }}${{ matrix.artifact_suffix }}
+        asset_name: ${{ matrix.artifact_name }}_${{ matrix.platform_name }}_${{ matrix.arch_name }}${{ matrix.artifact_suffix }}
+        file: ${{ github.workspace }}/build/build_path_prefix${{ matrix.artifact_name }}${{ matrix.artifact_suffix }}
         tag: ${{ github.ref }}
         overwrite: true
 

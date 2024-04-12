@@ -19,13 +19,6 @@ set(CMAKE_CXX_STANDARD 20)
 
 project(BitLogin)
 
-# If use vcpkg, set static link
-if (VCPKG_TARGET_TRIPLET MATCHES "-static")
-    string(REPLACE "/MD" "/MT" CMAKE_CXX_FLAGS ${CMAKE_CXX_FLAGS})
-    string(REPLACE "/MD" "/MT" CMAKE_CXX_FLAGS_DEBUG ${CMAKE_CXX_FLAGS_DEBUG})
-    string(REPLACE "/MD" "/MT" CMAKE_CXX_FLAGS_RELEASE ${CMAKE_CXX_FLAGS_RELEASE})
-endif ()
-
 # ===================================
 # Begin finding dependencies
 # ===================================
@@ -48,6 +41,31 @@ endif ()
 
 # ===================================
 # End finding dependencies
+# ===================================
+
+# ===================================
+# Begin compile setting
+# ===================================
+
+# Try to use static link
+if (VCPKG_TARGET_TRIPLET MATCHES "-static")
+    string(REPLACE "/MD" "/MT" CMAKE_CXX_FLAGS ${CMAKE_CXX_FLAGS})
+    string(REPLACE "/MD" "/MT" CMAKE_CXX_FLAGS_DEBUG ${CMAKE_CXX_FLAGS_DEBUG})
+    string(REPLACE "/MD" "/MT" CMAKE_CXX_FLAGS_RELEASE ${CMAKE_CXX_FLAGS_RELEASE})
+endif ()
+
+set(OPENSSL_USE_STATIC_LIBS TRUE)
+
+if (CMAKE_HOST_SYSTEM_NAME MATCHES "Linux" OR CMAKE_HOST_SYSTEM_NAME MATCHES "Darwin")
+    set(CMAKE_FIND_LIBRARY_SUFFIXES .a ${CMAKE_FIND_LIBRARY_SUFFIXES})
+elseif (CMAKE_HOST_SYSTEM_NAME MATCHES "Windows")
+    set(CMAKE_FIND_LIBRARY_SUFFIXES .lib ${CMAKE_FIND_LIBRARY_SUFFIXES})
+else()
+    message(FATAL_ERROR "Unsupported platform")
+endif ()
+
+# ===================================
+# End compile setting
 # ===================================
 
 # Include directories

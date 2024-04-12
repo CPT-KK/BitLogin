@@ -46,6 +46,11 @@ jobs:
       run: |
         echo "build-output-dir=${{ github.workspace }}/build" >> "$GITHUB_OUTPUT"
 
+    - name: Convert runner.arch to lowercase
+      id: vars
+      run: echo "::set-output name=arch_lower::$(echo ${{ runner.arch }} | tr '[:upper:]' '[:lower:]')"
+      shell: bash
+
     - name: Set CMake version
       uses: jwlawson/actions-setup-cmake@v2
       with:
@@ -87,7 +92,7 @@ jobs:
       uses: svenstaro/upload-release-action@v2
       if: matrix.os == 'ubuntu-latest'
       with:
-        asset_name: ${{ matrix.artifact_name }}_${{runner.os}}_${{runner.arch}}
+        asset_name: ${{ matrix.artifact_name }}_${{ runner.os }}_${{ steps.vars.outputs.arch_lower }}
         file: ${{ steps.strings.outputs.build-output-dir }}/${{ matrix.artifact_name }}
         tag: ${{ github.ref }}
         overwrite: true
@@ -96,7 +101,7 @@ jobs:
       uses: svenstaro/upload-release-action@v2
       if: matrix.os == 'macos-latest'
       with:
-        asset_name: ${{ matrix.artifact_name }}_${{runner.os}}_${{runner.arch}}
+        asset_name: ${{ matrix.artifact_name }}_${{ runner.os }}_${{ steps.vars.outputs.arch_lower }}
         file: ${{ steps.strings.outputs.build-output-dir }}/${{ matrix.artifact_name }}
         tag: ${{ github.ref }}
         overwrite: true
@@ -105,7 +110,7 @@ jobs:
       uses: svenstaro/upload-release-action@v2
       if: matrix.os == 'windows-latest'
       with:
-        asset_name: ${{ matrix.artifact_name }}_${{runner.os}}_${{runner.arch}}.exe
-        file: ${{ steps.strings.outputs.build-output-dir }}/${{ matrix.build_type }}/${{ matrix.artifact_name }}.exe
+        asset_name: ${{ matrix.artifact_name }}_${{ runner.os }}_${{ steps.vars.outputs.arch_lower }}.exe
+        file: ${{ steps.strings.outputs.build-output-dir }}/${{ matrix.build_type }}/${{ matrix.artifact_name }}
         tag: ${{ github.ref }}
         overwrite: true

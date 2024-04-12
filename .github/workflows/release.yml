@@ -48,7 +48,7 @@ jobs:
 
     - name: Convert runner.arch to lowercase
       id: vars
-      run: echo "::set-output name=arch_lower::$(echo ${{ runner.arch }} | tr '[:upper:]' '[:lower:]')"
+      run: echo "arch_lower=$(echo ${{ runner.arch }} | tr '[:upper:]' '[:lower:]')"  >> "$GITHUB_OUTPUT"
       shell: bash
 
     - name: Set CMake version

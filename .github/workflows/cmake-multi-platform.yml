@@ -29,7 +29,6 @@ jobs:
           - os: windows-latest
             c_compiler: cl
             cpp_compiler: cl
-            install-cmd: vcpkg install
             artifact_name: BitSrun.exe
           - os: ubuntu-latest
             c_compiler: gcc
@@ -58,8 +57,19 @@ jobs:
       run: |
         echo "build-output-dir=${{ github.workspace }}/build" >> "$GITHUB_OUTPUT"
 
-    - name: Install dependency
+    - name: Install dependency (Ubuntu and MacOS)
+      if: matrix.os != 'windows-latest'
       run: ${{ matrix.install-cmd }}
+
+    - name: Install dependency (Windows)
+      if: matrix.os == 'windows-latest'
+      run: 
+        git clone https://github.com/microsoft/vcpkg.git
+        .\vcpkg\bootstrap-vcpkg.bat
+        .\vcpkg\vcpkg integrate install
+        .\vcpkg\vcpkg install fmt:x64-windows-static
+        .\vcpkg\vcpkg install cpp-httplib:x64-windows-static
+        .\vcpkg\vcpkg install argparse:x64-windows-static
 
     - name: Configure CMake (Ubuntu and MacOS)
       if: matrix.os != 'windows-latest'
@@ -69,12 +79,13 @@ jobs:
         -DCMAKE_C_COMPILER=${{ matrix.c_compiler }}
         -DCMAKE_BUILD_TYPE=${{ matrix.build_type }}
         -S ${{ github.workspace }}
-      
+    
     - name: Configure CMake (Windows)
       if: matrix.os == 'windows-latest'
       run: >
         cmake -B ${{ steps.strings.outputs.build-output-dir }}
-        -DCMAKE_TOOLCHAIN_FILE=${{ github.workspace }}/vcpkg/scripts/buildsystems/vcpkg.cmake
+        -DCMAKE_TOOLCHAIN_FILE=./vcpkg/scripts/buildsystems/vcpkg.cmake
+        -DVCPKG_TARGET_TRIPLET=x64-windows-static
         -DCMAKE_CXX_COMPILER=${{ matrix.cpp_compiler }}
         -DCMAKE_C_COMPILER=${{ matrix.c_compiler }}
         -DCMAKE_BUILD_TYPE=${{ matrix.build_type }}

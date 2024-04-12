@@ -1,4 +1,3 @@
-#include "BitSrunUser.hpp" 
 #include "BitLogin.hpp"
 
 int main(int argc, char *argv[]) {

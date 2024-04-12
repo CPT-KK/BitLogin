@@ -170,12 +170,6 @@ std::string BitSrunUser::get_token_() {
 };
 
 std::string BitSrunUser::fkbase64(const std::string& raw_s) {
-    // Base64 encoding characters
-    const std::string base64_chars = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789+/";
-
-    // Custom encoding characters based on the provided Python function
-    const std::string custom_chars = "LVoJPiCN2R8G90yg+hmFHuacZ1OWMnrsSTXkYpUq/3dlbfKwv6xztjI7DeBE45QA";
-
     // Lambda to convert input string to binary form
     auto to_binary = [](const std::string& input) {
         std::string binary;

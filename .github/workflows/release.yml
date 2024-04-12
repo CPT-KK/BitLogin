@@ -25,7 +25,7 @@ jobs:
           - os: windows-latest
             c_compiler: cl
             cpp_compiler: cl
-            artifact_name: BitLogin.exe
+            artifact_name: BitLogin
           - os: ubuntu-latest
             c_compiler: gcc
             cpp_compiler: g++
@@ -111,6 +111,6 @@ jobs:
       if: matrix.os == 'windows-latest'
       with:
         asset_name: ${{ matrix.artifact_name }}_${{ runner.os }}_${{ steps.vars.outputs.arch_lower }}.exe
-        file: ${{ steps.strings.outputs.build-output-dir }}/${{ matrix.build_type }}/${{ matrix.artifact_name }}
+        file: ${{ steps.strings.outputs.build-output-dir }}/${{ matrix.build_type }}/${{ matrix.artifact_name }}.exe
         tag: ${{ github.ref }}
         overwrite: true

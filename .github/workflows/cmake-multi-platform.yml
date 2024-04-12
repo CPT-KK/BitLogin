@@ -88,6 +88,6 @@ jobs:
       uses: svenstaro/upload-release-action@v2
       with:
         repo_token: ${{ secrets.GITHUB_TOKEN }}
-        file: ${{ steps.strings.outputs.build-output-dir }} / ${{ matrix.exe_name }}
+        file: ${{ steps.strings.outputs.build-output-dir }}/${{ matrix.exe_name }}
         asset_name: ${{ matrix.exe_name }}
         tag: ${{ github.ref }}

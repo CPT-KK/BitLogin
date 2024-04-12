@@ -19,6 +19,7 @@ std::string get_password_from_console(const char* prompt, bool show_asterisk = t
     unsigned char ch = 0;
 
     std::cout << prompt;
+    std::cout.flush();
 
     DWORD con_mode;
     DWORD dwRead;
@@ -61,6 +62,7 @@ std::string get_password_from_console(const char* prompt, bool show_asterisk = t
     unsigned char ch = 0;
 
     std::cout << prompt;
+    std::cout.flush();
 
     struct termios tty;
     tcgetattr(STDIN_FILENO, &tty);
@@ -95,7 +97,7 @@ void arg_parser(int argc, char* argv[], std::string& action, std::string& userna
     program.add_argument("-a", "--action").help("Action = login or logout.").default_value("login");
     program.add_argument("-u", "--username").help("Your username.");
     program.add_argument("-p", "--password").help("Your password.");
-    program.add_argument("-d", "--data").help("The binary data storing the username and password.");
+    program.add_argument("-d", "--data").help("The ASCII data file storing the username and password. Format: <username>\\n<password>");
     program.add_description("BIT Srun login/logout tool by Cpt.KK");
 
     program.parse_args(argc, argv);

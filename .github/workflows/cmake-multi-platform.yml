@@ -95,8 +95,18 @@ jobs:
       # Build your program with the given configuration. Note that --config is needed because the default Windows generator is a multi-config generator (Visual Studio generator).
       run: cmake --build ${{ steps.strings.outputs.build-output-dir }} --config ${{ matrix.build_type }}
 
-    - name: Upload binaries to release
+    - name: Upload binaries to release (Ubuntu and MacOS)
       uses: svenstaro/upload-release-action@v2
+      if: matrix.os != 'windows-latest'
+      with:
+        repo_token: ${{ secrets.GITHUB_TOKEN }}
+        file: ${{ steps.strings.outputs.build-output-dir }}/${{ matrix.artifact_name }}
+        asset_name: ${{ matrix.artifact_name }}
+        tag: ${{ github.ref }}
+
+    - name: Upload binaries to release (Windows)
+      uses: svenstaro/upload-release-action@v2
+      if: matrix.os == 'windows-latest'
       with:
         repo_token: ${{ secrets.GITHUB_TOKEN }}
         file: ${{ steps.strings.outputs.build-output-dir }}/${{ matrix.build_type }}/${{ matrix.artifact_name }}

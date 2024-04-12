@@ -18,6 +18,7 @@ endif()
 
 # Configure openssl to use static link
 set(OPENSSL_USE_STATIC_LIBS TRUE)
+set(BUILD_SHARED_LIBS OFF)
 
 # ===================================
 # End compiling setting

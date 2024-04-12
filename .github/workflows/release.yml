@@ -24,7 +24,7 @@ jobs:
             install-cmd: echo "No dependencies to install on Windows."
             platform_name: windows
             arch_name: x86_64
-            build_path_prefix: matrix.build_type/
+            build_path_prefix: Release/
             artifact_name: BitLogin
             artifact_suffix: .exe
           - os: ubuntu-latest

@@ -85,7 +85,7 @@ jobs:
       uses: svenstaro/upload-release-action@v2
       with:
         asset_name: ${{ matrix.artifact_name }}_${{ matrix.platform_name }}_${{ matrix.arch_name }}${{ matrix.artifact_suffix }}
-        file: ${{ github.workspace }}/build/build_path_prefix${{ matrix.artifact_name }}${{ matrix.artifact_suffix }}
+        file: ${{ github.workspace }}/build/${{ matrix.build_path_prefix }}${{ matrix.artifact_name }}${{ matrix.artifact_suffix }}
         tag: ${{ github.ref }}
         overwrite: true
 

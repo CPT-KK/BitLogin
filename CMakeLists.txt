@@ -11,7 +11,7 @@ macro(get_from_github DEPENDENCY_NAME GIT_REPOSITORY)
     )
     FetchContent_MakeAvailable(${DEPENDENCY_NAME})
 
-    message(STATUS "Getting ${DEPENDENCY_NAME} via ${GIT_REPOSITORY}...Done.")
+    message(STATUS "Getting ${DEPENDENCY_NAME} done.")
 
 endmacro()
 

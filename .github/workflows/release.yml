@@ -57,7 +57,7 @@ jobs:
 
     - name: Install dependency (Windows)
       if: matrix.os == 'windows-latest'
-      run: 
+      run: echo "No dependencies to install on Windows."
 
     - name: CMake Configure (Ubuntu and macOS)
       if: matrix.os != 'windows-latest'

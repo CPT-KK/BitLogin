@@ -3,7 +3,7 @@ cmake_minimum_required(VERSION 3.10)
 set(CMAKE_CXX_STANDARD 17)
 set(CMAKE_BUILD_TYPE Release)
 
-project(BitLogin VERSION 0.9.5)
+project(BitLogin VERSION 0.9.6)
 
 configure_file(
     "${CMAKE_CURRENT_SOURCE_DIR}/cmake/project.h.in"

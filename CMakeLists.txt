@@ -44,7 +44,7 @@ add_executable(${PROJECT_NAME} "${SRC_LIST}")
 
 # Link dependency libraries
 target_link_libraries(${PROJECT_NAME} PRIVATE OpenSSL::SSL OpenSSL::Crypto)
-target_link_libraries(${PROJECT_NAME} PRIVATE fmt::fmt-header-only)
+target_link_libraries(${PROJECT_NAME} PRIVATE fmt::fmt)
 
 # Echo output name
 add_custom_command(TARGET ${PROJECT_NAME} POST_BUILD

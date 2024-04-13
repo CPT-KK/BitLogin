@@ -24,7 +24,7 @@ This is an C++ implementation of BIT Srun login/logout client.
 - `-a`, 或 `--action`: 指定动作为 login 或 logout。未指定时，默认 login
 - `-d`, 或 `--data`: 从用户给定的 base64 编码文件中加载用户名和密码，指定该参数时，将会忽略 `-u` 和 `-p` 参数
 - `-u`, 或 `--username`: BIT Srun 用户名，未指定此参数且未指定 `-d` 时，程序会要求用户输入
-- `-p`, 或 `--password`: BIT Srun 密码，未指定此参数且未指定 `-d` 时，程序会要求用户输入（密码输入不显示在控制台上）
+- `-p`, 或 `--password`: BIT Srun 密码，未指定此参数且未指定 `-p` 时，程序会要求用户输入（密码输入不显示在控制台上）
 
 **一般来说，使用 `-d`，或者 `-u` 和 `-p`就可以了**
 

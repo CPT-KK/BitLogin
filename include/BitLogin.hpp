@@ -10,6 +10,7 @@
 #include <vector>
 
 #include "BitSrunUser.hpp"
+#include "project.h"
 
 // Declaration
 std::string get_password_from_console(const char* prompt, bool show_asterisk = true);
@@ -141,12 +142,14 @@ std::vector<uint8_t> base64_decode(const std::string& encoded_string) {
 }
 
 void arg_parser(int argc, char* argv[], std::string& action, std::string& username, std::string& password) {
-    argparse::ArgumentParser program("BitLogin", "1.0.0");
+
+    argparse::ArgumentParser program(PROJECT_NAME, PROJECT_STR);
     program.add_argument("-a", "--action").help("Action = login or logout.").default_value("login");
     program.add_argument("-u", "--username").help("Your username.");
     program.add_argument("-p", "--password").help("Your password.");
     program.add_argument("-d", "--data").help("The base64 encoded data file storing the username and password.");
-    program.add_description("BIT Srun login/logout tool by Cpt.KK");
+    program.add_description(PROJECT_DEF);
+    program.add_epilog(PROJECT_COPY);
 
     program.parse_args(argc, argv);
 

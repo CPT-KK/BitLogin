@@ -54,6 +54,12 @@ jobs:
       with:
         cmake-version: '3.29.0'
 
+    - name: Set gcc/g++ version (Ubuntu and macOS)
+      if: matrix.os != 'windows-latest'
+      uses: aminya/setup-cpp@v1
+      with:
+        compiler: gcc-9
+
     - name: Install dependency
       run: ${{ matrix.install-cmd }}
 

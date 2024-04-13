@@ -1,13 +1,13 @@
 #include "BitLogin.hpp"
 
 int main(int argc, char *argv[]) {
+    int ret = -1;
+    std::string action;
+    std::string username;
+    std::string password;
 
     try { 
         // Parse input arguments
-        std::string action;
-        std::string username;
-        std::string password;
-        
         arg_parser(argc, argv, action, username, password);
 
         // Do action
@@ -17,16 +17,25 @@ int main(int argc, char *argv[]) {
         } else if (action == "logout") {
             user.logout();
         }
-
-        secure_clear_string(password);
-
+        
+        ret = 0;
+        
     } catch(std::exception& e) {
-        fmt::print(fg(fmt::color::crimson), "Error: {}\n", e.what());
-        return 1;
+        fmt::print(FMT_ERR, "Error: {}\n", e.what());
+
+        ret = 1;
     } catch(...) {
-        fmt::print(fg(fmt::color::crimson), "Unknown error!\n");
-        return 1;
+        fmt::print(FMT_ERR, "Unknown error!\n");
+        ret = 2;
     }
 
-    return 0; 
+    // Cleaning
+    secure_clear_string(username);
+    secure_clear_string(password);
+    for (size_t i = 3; i > 0; i--) {
+        fmt::print("Program will exit in {} seconds...\r", i);
+        std::this_thread::sleep_for(std::chrono::seconds(1));
+    }
+
+    return ret; 
 }

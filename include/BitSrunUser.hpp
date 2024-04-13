@@ -18,6 +18,9 @@
 #define _TYPE_CONST "1"
 #define _N_CONST "200"
 
+#define FMT_WARN fg(fmt::color::yellow)
+#define FMT_ERR fg(fmt::color::crimson) 
+
 // Base64 encoding characters
 static const std::string base64_chars = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789+/";
 

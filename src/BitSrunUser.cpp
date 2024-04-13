@@ -43,7 +43,7 @@ BitSrunUser::~BitSrunUser() {};
 void BitSrunUser::login() {
     // if logged in, return
     if (logged_in_user_ == username_) {
-        std::cout << fmt::format("User {:s} has already logged in.\n", username_);
+        fmt::print(FMT_WARN, "User {:s} has already logged in.\n", username_);
         return;
     }
 
@@ -89,7 +89,7 @@ void BitSrunUser::login() {
     if (get_params_from_response_(res->body, "error") == "ok" &&
         get_params_from_response_(res->body, "username") == username_ &&
         get_params_from_response_(res->body, "online_ip") != "") {
-            std::cout << fmt::format("User {:s} logged in with IP {:s}.\n", get_params_from_response_(res->body, "username"), get_params_from_response_(res->body, "online_ip"));
+            fmt::print("User {:s} logged in with IP {:s}.\n", get_params_from_response_(res->body, "username"), get_params_from_response_(res->body, "online_ip"));
     } else if (get_params_from_response_(res->body, "ploy_msg") != "") {
         throw std::runtime_error(get_params_from_response_(res->body, "ploy_msg"));
     } else if (get_params_from_response_(res->body, "error") != "") {
@@ -109,7 +109,7 @@ void BitSrunUser::login() {
 void BitSrunUser::logout() {
     // if not logged in, return
     if (logged_in_user_ == "") {
-        std::cout << fmt::format("User {:s} has not logged in.\n", username_);
+        fmt::print(FMT_WARN, "User {:s} has not logged in.\n", username_);
         return;
     }
 
@@ -123,7 +123,7 @@ void BitSrunUser::logout() {
     auto res = client_srun_ptr_->Post("/cgi-bin/srun_portal", params);
     check_response_valid_(res, "Failed to logout. Check network connection.");
 
-    std::cout << fmt::format("User {:s} logged out from IP {:s}.\n", username_, get_params_from_response_(res->body, "online_ip"));
+    fmt::print("User {:s} logged out from IP {:s}.\n", username_, get_params_from_response_(res->body, "online_ip"));
 
     return;   
 }

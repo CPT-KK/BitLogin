@@ -14,6 +14,7 @@
 
 // Declaration
 std::string get_password_from_console(const char* prompt, bool show_asterisk = true);
+void get_userpass_from_file(const std::string& data_path, std::string& username, std::string& password);
 void arg_parser(int argc, char* argv[], std::string& action, std::string& username, std::string& password);
 std::vector<uint8_t> base64_decode(const std::string& encoded_string);
 
@@ -99,6 +100,40 @@ std::string get_password_from_console(const char* prompt, bool show_asterisk) {
 }
 #endif  // Architecture ifdef
 
+void get_userpass_from_file(const std::string& data_path, std::string& username, std::string& password) {
+    // open file
+    std::ifstream data_file(data_path, std::ios::in | std::ios::binary);
+    if (!data_file.is_open()) {
+        throw std::runtime_error(fmt::format("Cannot open data file {:s}.\n", data_path));
+    }
+
+    // read file size
+    data_file.seekg(0, std::ios::end);
+    std::streamoff data_size = data_file.tellg();
+    data_file.seekg(0, std::ios::beg);
+
+    // read content
+    std::istreambuf_iterator<char> beg(data_file), end;
+    std::string encoded_string(beg, end);
+
+    // close file
+    data_file.close();
+
+    // get username and password
+    std::vector<uint8_t> decoded_data = base64_decode(encoded_string);
+    std::string decoded_string(decoded_data.begin(), decoded_data.end());
+    auto seperator = decoded_string.find("\n");
+    if (seperator == std::string::npos) {
+        throw std::runtime_error("Invalid data file.\n");
+    }
+    username = decoded_string.substr(0, seperator);
+    password = decoded_string.substr(seperator + 1);
+
+    if (username.back() == '\r') {
+        username.pop_back();
+    }
+}
+
 inline int base64_char_value(char c) {
     
 
@@ -153,60 +188,29 @@ void arg_parser(int argc, char* argv[], std::string& action, std::string& userna
 
     program.parse_args(argc, argv);
 
-    // Get action
+    // Get input arguments
     action = program.get<std::string>("--action");
-
-    if (action != "login" && action != "logout") {
-        throw std::runtime_error(fmt::format("Unknown action {:s}.\n", action));
-    }
-
     if (program.present("--data")) {
-        std::string data_path = program.get<std::string>("--data");
-
-        // read binary data from file
-        std::ifstream data_file(data_path, std::ios::in | std::ios::binary);
-        if (!data_file.is_open()) {
-            throw std::runtime_error(fmt::format("Cannot open data file {:s}.\n", data_path));
-        }
-
-        // read data size
-        data_file.seekg(0, std::ios::end);
-        std::streamoff data_size = data_file.tellg();
-        data_file.seekg(0, std::ios::beg);
-
-        // read data content
-        std::istreambuf_iterator<char> beg(data_file), end;
-        std::string encoded_string(beg, end);
-
-        // close file
-        data_file.close();
-
-        // get username and password
-        std::vector<uint8_t> decoded_data = base64_decode(encoded_string);
-        std::string decoded_string(decoded_data.begin(), decoded_data.end());
-        auto seperator = decoded_string.find("\n");
-        if (seperator == std::string::npos) {
-            throw std::runtime_error("Invalid data file.\n");
-        }
-        username = decoded_string.substr(0, seperator);
-        password = decoded_string.substr(seperator + 1);
-
-        if (username.back() == '\r') {
-            username.pop_back();
-        }
-    }
-
-    if (program.present("--username")) {
+        get_userpass_from_file(program.get<std::string>("--data"), username, password);
+    } else if (program.present("--username") && program.present("--password")) {
         username = program.get<std::string>("--username");
-    } else if (username.empty()) {
+        password = program.get<std::string>("--password");
+    } else if (program.present("--username")) {
+        username = program.get<std::string>("--username");
+        password = get_password_from_console("Please enter your password: ", false);
+    } else if (program.present("--password")) {
+        username = program.get<std::string>("--password");
         std::cout << "Please enter your username: ";
         std::cin >> username;
+    } else {
+        std::cout << "Please enter your username: ";
+        std::cin >> username;
+        password = get_password_from_console("Please enter your password: ", false);
     }
 
-    if (program.present("--password")) {
-        password = program.get<std::string>("--password");
-    } else if (password.empty()) {
-        password = get_password_from_console("Please enter your password: ", false);
+    // Check inputs
+    if (action != "login" && action != "logout") {
+        throw std::runtime_error(fmt::format("Unknown action {:s}.\n", action));
     }
 
     if (!std::regex_match(username, std::regex("\\d{1,20}"))) {

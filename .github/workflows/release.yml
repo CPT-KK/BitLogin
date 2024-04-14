@@ -88,8 +88,8 @@ jobs:
       shell: bash
       run: |
         artifact_name_raw=`cat ${{ github.workspace }}/build/execname`
-        echo "The artifact will be named ${artifact_name_raw,,}"
-        echo "artifact_name_full=${artifact_name_raw,,}" >> "$GITHUB_OUTPUT"
+        echo "The artifact will be named ${artifact_name_raw}"
+        echo "artifact_name_full=${artifact_name_raw}" >> "$GITHUB_OUTPUT"
 
     - name: Upload binaries to release
       uses: svenstaro/upload-release-action@v2

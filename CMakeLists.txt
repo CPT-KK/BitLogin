@@ -9,6 +9,10 @@ configure_file(
     "${CMAKE_CURRENT_SOURCE_DIR}/cmake/project.h.in"
     "${CMAKE_BINARY_DIR}/project.h"
 )
+configure_file(
+    "${CMAKE_CURRENT_SOURCE_DIR}/cmake/execname.in"
+    "${CMAKE_BINARY_DIR}/execname"
+)
 
 # Configure vcpkg to use static link
 if(VCPKG_TARGET_TRIPLET MATCHES "-static")

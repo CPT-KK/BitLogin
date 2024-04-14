@@ -16,6 +16,10 @@ int main(int argc, char *argv[]) {
             user.login();
         } else if (action == "logout") {
             user.logout();
+        } else if (action == "save") {
+            fmt::print("Saving encoded info to [userdata.dat] at current directory...\n");
+            save_string_to_file("userdata.dat", base64_encode(username + "\n" + password));
+            fmt::print("Save successfully!\n");
         }
         
         ret = 0;
@@ -37,5 +41,6 @@ int main(int argc, char *argv[]) {
         std::this_thread::sleep_for(std::chrono::seconds(1));
     }
 
+    fmt::print("\n");
     return ret; 
 }

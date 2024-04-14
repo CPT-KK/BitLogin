@@ -43,7 +43,7 @@ BitSrunUser::~BitSrunUser() {};
 void BitSrunUser::login() {
     // if logged in, return
     if (logged_in_user_ == username_) {
-        fmt::print(FMT_WARN, "User {:s} has already logged in.\n", username_);
+        fmt::print(FMT_WARN, "Warn: User {:s} has already logged in.\n", username_);
         return;
     }
 

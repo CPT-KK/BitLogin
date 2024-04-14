@@ -15,8 +15,14 @@
 // Declaration
 std::string get_password_from_console(const char* prompt, bool show_asterisk = true);
 void get_userpass_from_file(const std::string& data_path, std::string& username, std::string& password);
+
+int base64_char_value(char c);
+std::string base64_encode(const std::string& input);
+std::vector<uint8_t> base64_decode(std::string& encoded_string);
+
 void arg_parser(int argc, char* argv[], std::string& action, std::string& username, std::string& password);
-std::vector<uint8_t> base64_decode(const std::string& encoded_string);
+
+
 
 #ifdef _WIN32
 #include <windows.h>
@@ -102,7 +108,7 @@ std::string get_password_from_console(const char* prompt, bool show_asterisk) {
 
 void get_userpass_from_file(const std::string& data_path, std::string& username, std::string& password) {
     // open file
-    std::ifstream data_file(data_path, std::ios::in | std::ios::binary);
+    std::ifstream data_file(data_path, std::ios::in);
     if (!data_file.is_open()) {
         throw std::runtime_error(fmt::format("Cannot open data file {:s}.\n", data_path));
     }
@@ -134,8 +140,17 @@ void get_userpass_from_file(const std::string& data_path, std::string& username,
     }
 }
 
+void save_string_to_file(const std::string& data_path, const std::string& data) {
+    std::ofstream data_file(data_path, std::ios::out);
+    if (!data_file.is_open()) {
+        throw std::runtime_error(fmt::format("Cannot save to [{:s}]. Please save the following string:\n\n{:s}\n\nto where you can find it.", data_path, data));
+    }
+
+    data_file.write(data.c_str(), data.size());
+    data_file.close();
+}
+
 inline int base64_char_value(char c) {
-    
 
     size_t index = base64_chars.find(c);
     if (index == std::string::npos) {
@@ -144,7 +159,57 @@ inline int base64_char_value(char c) {
     return static_cast<int>(index);
 }
 
-std::vector<uint8_t> base64_decode(const std::string& encoded_string) {
+std::string base64_encode(const std::string& input) {
+    std::string ret;
+    int i = 0;
+    int j = 0;
+    unsigned char char_array_3[3];
+    unsigned char char_array_4[4];
+    size_t in_len = input.size();
+    const unsigned char* bytes_to_encode = reinterpret_cast<const unsigned char*>(input.data());
+
+    while (in_len--) {
+        char_array_3[i++] = *(bytes_to_encode++);
+        if (i == 3) {
+            char_array_4[0] = (char_array_3[0] & 0xfc) >> 2;
+            char_array_4[1] = ((char_array_3[0] & 0x03) << 4) + ((char_array_3[1] & 0xf0) >> 4);
+            char_array_4[2] = ((char_array_3[1] & 0x0f) << 2) + ((char_array_3[2] & 0xc0) >> 6);
+            char_array_4[3] = char_array_3[2] & 0x3f;
+
+            for(i = 0; (i <4) ; i++)
+                ret += base64_chars[char_array_4[i]];
+            i = 0;
+        }
+    }
+
+    if (i) {
+        for(j = i; j < 3; j++)
+            char_array_3[j] = '\0';
+
+        char_array_4[0] = (char_array_3[0] & 0xfc) >> 2;
+        char_array_4[1] = ((char_array_3[0] & 0x03) << 4) + ((char_array_3[1] & 0xf0) >> 4);
+        char_array_4[2] = ((char_array_3[1] & 0x0f) << 2) + ((char_array_3[2] & 0xc0) >> 6);
+        char_array_4[3] = char_array_3[2] & 0x3f;
+
+        for (j = 0; (j < i + 1); j++)
+            ret += base64_chars[char_array_4[j]];
+
+        while((i++ < 3))
+            ret += '=';
+    }
+
+    return ret;
+}
+
+std::vector<uint8_t> base64_decode(std::string& encoded_string) {
+    if (encoded_string.back() == '\n') {
+        fmt::print(FMT_WARN, "Warn: There is a LF/NL(Line Feed/New Line) character at the end of the data file.\n");
+        encoded_string.pop_back();
+    }
+    if (encoded_string.back() == '\r') {
+        fmt::print(FMT_WARN, "Warn: There is a CR (Carriage Return) character at the end of the data file.\n");
+        encoded_string.pop_back();
+    }
 
     if (encoded_string.empty() || (encoded_string.size() % 4 != 0)) {
         throw std::runtime_error("Invalid Base64 encoded string length");
@@ -179,7 +244,7 @@ std::vector<uint8_t> base64_decode(const std::string& encoded_string) {
 void arg_parser(int argc, char* argv[], std::string& action, std::string& username, std::string& password) {
 
     argparse::ArgumentParser program(PROJECT_NAME, PROJECT_STR);
-    program.add_argument("-a", "--action").help("Action = login or logout.").default_value("login");
+    program.add_argument("-a", "--action").help("Action = login, logout or save.").default_value("login");
     program.add_argument("-u", "--username").help("Your username.");
     program.add_argument("-p", "--password").help("Your password.");
     program.add_argument("-d", "--data").help("The base64 encoded data file storing the username and password.");
@@ -209,7 +274,7 @@ void arg_parser(int argc, char* argv[], std::string& action, std::string& userna
     }
 
     // Check inputs
-    if (action != "login" && action != "logout") {
+    if (action != "login" && action != "logout" && action != "save") {
         throw std::runtime_error(fmt::format("Unknown action {:s}.\n", action));
     }
 

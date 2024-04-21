@@ -6,6 +6,7 @@
 #include <regex>
 #include <vector>
 #include <algorithm>
+#include <bitset>
 
 #include <fmt/core.h>
 #include <fmt/color.h>
@@ -20,12 +21,6 @@
 
 #define FMT_WARN fg(fmt::color::yellow)
 #define FMT_ERR fg(fmt::color::crimson) 
-
-// Base64 encoding characters
-static const std::string base64_chars = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789+/";
-
-// Custom encoding characters
-static const std::string custom_chars = "LVoJPiCN2R8G90yg+hmFHuacZ1OWMnrsSTXkYpUq/3dlbfKwv6xztjI7DeBE45QA";
 
 void secure_clear_string(std::string& str);
 

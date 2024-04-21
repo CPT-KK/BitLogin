@@ -170,43 +170,25 @@ std::string BitSrunUser::get_token_() {
 };
 
 std::string BitSrunUser::fkbase64(const std::string& raw_s) {
-    // Lambda to convert input string to binary form
-    auto to_binary = [](const std::string& input) {
-        std::string binary;
-        for (char c : input) {
-            for (int i = 7; i >= 0; --i) {
-                binary += ((c >> i) & 1) ? '1' : '0';
-            }
-        }
-        return binary;
-    };
+    static const std::string base64_chars = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789+/";
+    static const std::string custom_chars = "LVoJPiCN2R8G90yg+hmFHuacZ1OWMnrsSTXkYpUq/3dlbfKwv6xztjI7DeBE45QA";
 
-    // Convert input string to binary
-    std::string binary = to_binary(raw_s);
+    std::string binary;
+    for (char c : raw_s) {
+        binary += std::bitset<8>(c).to_string();
+    }
 
-    // Lambda for converting 6-bit segments to Base64
-    auto to_base64 = [&](const std::string& bin) {
-        std::string result;
-        for (size_t i = 0; i < bin.length(); i += 6) {
-            std::string segment = bin.substr(i, 6);
-            int value = std::stoi(segment, nullptr, 2);
-            result += base64_chars[value];
-        }
-        return result;
-    };
+    std::string base64_encoded;
+    for (size_t i = 0; i < binary.length(); i += 6) {
+        std::string segment = binary.substr(i, 6);
+        int value = std::stoi(segment, nullptr, 2);
+        base64_encoded += base64_chars[value];
+    }
 
-    // Convert binary string to Base64
-    std::string base64_encoded = to_base64(binary);
-
-    // Perform custom character replacement
     std::string result;
     for (char c : base64_encoded) {
         auto pos = base64_chars.find(c);
-        if (pos != std::string::npos) {
-            result += custom_chars[pos];
-        } else {
-            result += c;
-        }
+        result += (pos != std::string::npos) ? custom_chars[pos] : c;
     }
 
     return result;
@@ -262,10 +244,8 @@ std::string BitSrunUser::xencode(const std::string& msg, const std::string& key)
     }
     std::vector<uint64_t> pwd = sencode(msg, true);
     std::vector<uint64_t> pwdk = sencode(key, false);
-    while (pwdk.size() < 4) {
-        pwdk.push_back(0);
-    }
-    
+    pwdk.resize(4, 0);
+
     uint64_t n = pwd.size() - 1;
     uint64_t z = pwd[n];
     uint64_t y = pwd[0];
@@ -274,19 +254,19 @@ std::string BitSrunUser::xencode(const std::string& msg, const std::string& key)
     uint64_t q = static_cast<uint64_t>(6 + 52 / (n + 1));
     uint64_t d = 0;
     while (q > 0) {
-        d = d + c & (0x8CE0D9BF | 0x731F2640);
+        d = (d + c) & (0x8CE0D9BF | 0x731F2640);
         e = d >> 2 & 3;
         for (p = 0; p < n; p++) {
             y = pwd[p + 1];
             m = z >> 5 ^ y << 2;
             m += ((y >> 3 ^ z << 4) ^ (d ^ y)) + (pwdk[(p & 3) ^ e] ^ z);
-            pwd[p] = pwd[p] + m & (0xEFB8D130 | 0x10472ECF);
+            pwd[p] = (pwd[p] + m) & (0xEFB8D130 | 0x10472ECF);
             z = pwd[p];
         }
         y = pwd[0];
         m = z >> 5 ^ y << 2;
         m += ((y >> 3 ^ z << 4) ^ (d ^ y)) + (pwdk[(p & 3) ^ e] ^ z);
-        pwd[n] = pwd[n] + m & (0xBB390742 | 0x44C6F8BD);
+        pwd[n] = (pwd[n] + m) & (0xBB390742 | 0x44C6F8BD);
         z = pwd[n];
         q--;
     }

@@ -1,28 +1,22 @@
 ﻿#ifndef BIT_LOGIN_H
 #define BIT_LOGIN_H
 
-#include <fmt/core.h>
-
-#include <argparse/argparse.hpp>
-#include <fstream>
 #include <iostream>
+#include <fstream>
 #include <string>
 #include <vector>
 
+#include <fmt/core.h>
+#include <argparse/argparse.hpp>
+
 #include "BitSrunUser.hpp"
 #include "project.h"
+#include "base64.hpp"
 
 // Declaration
 std::string get_password_from_console(const char* prompt, bool show_asterisk = true);
 void get_userpass_from_file(const std::string& data_path, std::string& username, std::string& password);
-
-int base64_char_value(char c);
-std::string base64_encode(const std::string& input);
-std::vector<uint8_t> base64_decode(std::string& encoded_string);
-
 void arg_parser(int argc, char* argv[], std::string& action, std::string& username, std::string& password);
-
-
 
 #ifdef _WIN32
 #include <windows.h>
@@ -148,97 +142,6 @@ void save_string_to_file(const std::string& data_path, const std::string& data) 
 
     data_file.write(data.c_str(), data.size());
     data_file.close();
-}
-
-inline int base64_char_value(char c) {
-
-    size_t index = base64_chars.find(c);
-    if (index == std::string::npos) {
-        throw std::runtime_error("Invalid Base64 encoding");
-    }
-    return static_cast<int>(index);
-}
-
-std::string base64_encode(const std::string& input) {
-    std::string ret;
-    int i = 0;
-    int j = 0;
-    unsigned char char_array_3[3];
-    unsigned char char_array_4[4];
-    size_t in_len = input.size();
-    const unsigned char* bytes_to_encode = reinterpret_cast<const unsigned char*>(input.data());
-
-    while (in_len--) {
-        char_array_3[i++] = *(bytes_to_encode++);
-        if (i == 3) {
-            char_array_4[0] = (char_array_3[0] & 0xfc) >> 2;
-            char_array_4[1] = ((char_array_3[0] & 0x03) << 4) + ((char_array_3[1] & 0xf0) >> 4);
-            char_array_4[2] = ((char_array_3[1] & 0x0f) << 2) + ((char_array_3[2] & 0xc0) >> 6);
-            char_array_4[3] = char_array_3[2] & 0x3f;
-
-            for(i = 0; (i <4) ; i++)
-                ret += base64_chars[char_array_4[i]];
-            i = 0;
-        }
-    }
-
-    if (i) {
-        for(j = i; j < 3; j++)
-            char_array_3[j] = '\0';
-
-        char_array_4[0] = (char_array_3[0] & 0xfc) >> 2;
-        char_array_4[1] = ((char_array_3[0] & 0x03) << 4) + ((char_array_3[1] & 0xf0) >> 4);
-        char_array_4[2] = ((char_array_3[1] & 0x0f) << 2) + ((char_array_3[2] & 0xc0) >> 6);
-        char_array_4[3] = char_array_3[2] & 0x3f;
-
-        for (j = 0; (j < i + 1); j++)
-            ret += base64_chars[char_array_4[j]];
-
-        while((i++ < 3))
-            ret += '=';
-    }
-
-    return ret;
-}
-
-std::vector<uint8_t> base64_decode(std::string& encoded_string) {
-    if (encoded_string.back() == '\n') {
-        fmt::print(FMT_WARN, "Warn: There is a LF/NL(Line Feed/New Line) character at the end of the data file.\n");
-        encoded_string.pop_back();
-    }
-    if (encoded_string.back() == '\r') {
-        fmt::print(FMT_WARN, "Warn: There is a CR (Carriage Return) character at the end of the data file.\n");
-        encoded_string.pop_back();
-    }
-
-    if (encoded_string.empty() || (encoded_string.size() % 4 != 0)) {
-        throw std::runtime_error("Invalid Base64 encoded string length");
-    }
-
-    std::vector<uint8_t> ret;
-    ret.reserve(encoded_string.size() * 3 / 4); // 预分配足够的输出缓冲区大小
-
-    for (size_t i = 0; i < encoded_string.size(); i += 4) {
-        int val[4] = {0};
-        for (int j = 0; j < 4; ++j) {
-            if (encoded_string[i + j] != '=') { // 处理填充字符
-                val[j] = base64_char_value(encoded_string[i + j]);
-            } else {
-                val[j] = 0;
-            }
-        }
-
-        // 组合成三个字节
-        ret.push_back((val[0] << 2) + ((val[1] & 0x30) >> 4));
-        if (encoded_string[i + 2] != '=') {
-            ret.push_back(((val[1] & 0xf) << 4) + ((val[2] & 0x3c) >> 2));
-        }
-        if (encoded_string[i + 3] != '=') {
-            ret.push_back(((val[2] & 0x3) << 6) + val[3]);
-        }
-    }
-
-    return ret;
 }
 
 void arg_parser(int argc, char* argv[], std::string& action, std::string& username, std::string& password) {

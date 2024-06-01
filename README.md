@@ -24,7 +24,7 @@ This is an C++ implementation of BIT Srun login/logout client.
 
 - `-h`, 或 `--help`: 打印帮助信息
 - `-v`, 或 `--version`: 打印版本信息
-- `-a`, 或 `--action`: 指定动作为 login 或 logout。未指定时，默认 login
+- `-a`, 或 `--action`: 指定动作为 login，save，或 logout。未指定时，默认 login
 - `-d`, 或 `--data`: 从用户给定的 base64 编码文件中加载用户名和密码。指定该参数时，将会忽略 `-u` 和 `-p` 参数的输入（若有）
 - `-u`, 或 `--username`: BIT 用户名，未指定此参数且未指定 `-d` 时，程序会要求用户输入
 - `-p`, 或 `--password`: BIT 密码，未指定此参数且未指定 `-d` 时，程序会要求用户输入（密码输入不显示在控制台上）
@@ -48,11 +48,12 @@ This is an C++ implementation of BIT Srun login/logout client.
     1120240000
     abcdef123456
     ```
+- （**生成base64 编码的账号密码文件**） `BitLogin -a save -u 1120240000 -p abcdef123456`
 
 ### 如何提供 `-d` 需要的 base64 编码的文件
 
-- 找一个在线 base64 编解码的网站，例如 [base64encode](https://www.base64encode.org/)。或者，在 Windows 下可以通过命令行的 `certutil` 工具来进行编码，参考 [Microsoft certutil](https://learn.microsoft.com/zh-cn/windows-server/administration/windows-commands/certutil) 和 [Windows下base64编解码命令](https://blog.csdn.net/zhaoxf4/article/details/106957388)。
-- 编码前的文本有两行，第一行为用户名，第二行为密码，用换行符分隔
+1. 使用程序的 `-a save` 功能，示例如上
+2. 找一个在线 base64 编解码的网站，例如 [base64encode](https://www.base64encode.org/)。或者，在 Windows 下可以通过命令行的 `certutil` 工具来进行编码，参考 [Microsoft certutil](https://learn.microsoft.com/zh-cn/windows-server/administration/windows-commands/certutil) 和 [Windows下base64编解码命令](https://blog.csdn.net/zhaoxf4/article/details/106957388)。编码前的文本有两行，第一行为用户名，第二行为密码，用换行符分隔
 
 ## For development
 

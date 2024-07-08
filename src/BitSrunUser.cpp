@@ -1,7 +1,5 @@
 ﻿#include "BitSrunUser.hpp"
-#include "MD5.hpp"
 #include "SHA1.hpp"
-
 void secure_clear_string(std::string& str) {
     memset(&str[0], 0, str.size());
     str.clear();
@@ -65,7 +63,7 @@ void BitSrunUser::login() {
     // prepare login data to generate checksum
     std::string data = "{\"username\":\"" + username_ + "\",\"password\":\"" + password_ + "\",\"acid\":\"" + ac_id_ + "\",\"ip\":\"" + ip_ + "\",\"enc_ver\":\"srun_bx1\"}";
 
-    std::string hmd5 = hmac_md5("", token);
+    std::string hmd5 = hashpp::get::getHMAC(hashpp::ALGORITHMS::MD5, "", "a474d6ce266e695ee8e70761af75a06b40a806e697061a63141ce4d7f8a05be8"); 
     std::string info = "{SRBX1}" + fkbase64(xencode(data, token));
     std::string chksum = sha1_hex(token + username_ + token + hmd5 + token + ac_id_ + token + ip_ + token + _N_CONST + token + _TYPE_CONST + token + info);
 
@@ -284,43 +282,6 @@ std::string BitSrunUser::xencode(const std::string& msg, const std::string& key)
 //     free(result);
 //     return ss.str();
 // }
-
-
-std::string BitSrunUser::hmac_md5(const std::string& data, const std::string& key) {
-    constexpr size_t block_size = 16; // MD5 block size is 64 bytes
-
-    std::string key_block = key;
-    if (key_block.length() > block_size) {
-        MD5 md5;
-        md5.update(key_block.c_str(), key_block.length());
-        md5.finalize();
-        key_block = md5.hexdigest();
-    }
-
-    key_block.resize(block_size, 0x00);
-
-    std::string o_key_pad(block_size, 0x5c);
-    std::string i_key_pad(block_size, 0x36);
-
-    for (size_t i = 0; i < block_size; ++i) {
-        o_key_pad[i] ^= key_block[i];
-        i_key_pad[i] ^= key_block[i];
-    }
-
-    MD5 md5_inner;
-    md5_inner.update(i_key_pad.c_str(), i_key_pad.length());
-    md5_inner.update(data.c_str(), data.length());
-    md5_inner.finalize();
-
-    std::string inner_result = md5_inner.hexdigest();
-
-    MD5 md5_outer;
-    md5_outer.update(o_key_pad.c_str(), o_key_pad.length());
-    md5_outer.update(inner_result.c_str(), inner_result.length());
-    md5_outer.finalize();
-
-    return md5_outer.hexdigest();
-}
 
 // std::string BitSrunUser::sha1_hex(const std::string& input) {
 //     unsigned char hash[SHA_DIGEST_LENGTH];

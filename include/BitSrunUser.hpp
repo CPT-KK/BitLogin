@@ -10,6 +10,8 @@
 
 #include <httplib.h>
 
+#include "hashpp.h"
+
 #define _TYPE_CONST "1"
 #define _N_CONST "200"
 

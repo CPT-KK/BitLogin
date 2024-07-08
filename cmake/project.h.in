@@ -7,10 +7,6 @@
 #define HOST_SYSTEM_VERSION "@CMAKE_HOST_SYSTEM_VERSION@"
 #define HOST_SYSTEM_ARCH "@CMAKE_HOST_SYSTEM_PROCESSOR@"
 
-// static const std::string PROJECT_STR = fmt::format("{} v{} built on {}_{}-{}", PROJECT_NAME, PROJECT_VERSION, HOST_SYSTEM_NAME, HOST_SYSTEM_VERSION, HOST_SYSTEM_ARCH);
-// static const std::string PROJECT_DEF = fmt::format("{} tool by Cpt.KK under GPL-3.0 license.", PROJECT_NAME);
-// static const std::string PROJECT_COPY = fmt::format("This is free software; see the source for copying conditions. There is NO warranty for ANY PURPOSE OF USE.");
-
 static const std::string PROJECT_STR = PROJECT_NAME + std::string(" v") + PROJECT_VERSION + std::string(" built on ") + HOST_SYSTEM_NAME + std::string("_") + HOST_SYSTEM_VERSION + std::string("-") + HOST_SYSTEM_ARCH;
 static const std::string PROJECT_DEF = PROJECT_NAME + std::string(" tool by Cpt.KK under GPL-3.0 license.");
 static const std::string PROJECT_COPY = "This is free software; see the source for copying conditions. There is NO warranty for ANY PURPOSE OF USE.";

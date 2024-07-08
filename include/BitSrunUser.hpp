@@ -8,19 +8,10 @@
 #include <algorithm>
 #include <bitset>
 
-#include <fmt/core.h>
-#include <fmt/color.h>
-
 #include <httplib.h>
-
-#include <openssl/hmac.h>
-#include <openssl/sha.h>
 
 #define _TYPE_CONST "1"
 #define _N_CONST "200"
-
-#define FMT_WARN fg(fmt::color::yellow)
-#define FMT_ERR fg(fmt::color::crimson) 
 
 void secure_clear_string(std::string& str);
 

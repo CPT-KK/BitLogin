@@ -1,4 +1,6 @@
 ﻿#include "BitSrunUser.hpp"
+#include "MD5.hpp"
+#include "SHA1.hpp"
 
 void secure_clear_string(std::string& str) {
     memset(&str[0], 0, str.size());
@@ -43,7 +45,7 @@ BitSrunUser::~BitSrunUser() {};
 void BitSrunUser::login() {
     // if logged in, return
     if (logged_in_user_ == username_) {
-        fmt::print(FMT_WARN, "Warn: User {:s} has already logged in.\n", username_);
+        printf("Warn: User %s has already logged in.\n", username_.c_str());
         return;
     }
 
@@ -61,17 +63,11 @@ void BitSrunUser::login() {
     params.emplace("n", _N_CONST);
 
     // prepare login data to generate checksum
-    std::string data = fmt::format(
-        R"({{"username":"{:s}","password":"{:s}","acid":"{:s}","ip":"{:s}","enc_ver":"srun_bx1"}})", 
-        username_, password_, ac_id_, ip_
-    );
+    std::string data = "{\"username\":\"" + username_ + "\",\"password\":\"" + password_ + "\",\"acid\":\"" + ac_id_ + "\",\"ip\":\"" + ip_ + "\",\"enc_ver\":\"srun_bx1\"}";
 
     std::string hmd5 = hmac_md5("", token);
     std::string info = "{SRBX1}" + fkbase64(xencode(data, token));
-    std::string chksum = sha1_hex(
-        fmt::format("{0}{1}{0}{2}{0}{3}{0}{4}{0}{5}{0}{6}{0}{7}", 
-        token, username_, hmd5, ac_id_, ip_, _N_CONST, _TYPE_CONST, info)
-    );
+    std::string chksum = sha1_hex(token + username_ + token + hmd5 + token + ac_id_ + token + ip_ + token + _N_CONST + token + _TYPE_CONST + token + info);
 
     // update params with login data, checksum, and encrypted password
     params.emplace("password", "{MD5}" + hmd5);
@@ -89,7 +85,7 @@ void BitSrunUser::login() {
     if (get_params_from_response_(res->body, "error") == "ok" &&
         get_params_from_response_(res->body, "username") == username_ &&
         get_params_from_response_(res->body, "online_ip") != "") {
-            fmt::print("User {:s} logged in with IP {:s}.\n", get_params_from_response_(res->body, "username"), get_params_from_response_(res->body, "online_ip"));
+            printf("User %s logged in with IP %s.\n", get_params_from_response_(res->body, "username").c_str(), get_params_from_response_(res->body, "online_ip").c_str());
     } else if (get_params_from_response_(res->body, "ploy_msg") != "") {
         throw std::runtime_error(get_params_from_response_(res->body, "ploy_msg"));
     } else if (get_params_from_response_(res->body, "error") != "") {
@@ -109,7 +105,7 @@ void BitSrunUser::login() {
 void BitSrunUser::logout() {
     // if not logged in, return
     if (logged_in_user_ == "") {
-        fmt::print(FMT_WARN, "User {:s} has not logged in.\n", username_);
+        printf("User %s has not logged in.\n", username_.c_str());
         return;
     }
 
@@ -123,7 +119,7 @@ void BitSrunUser::logout() {
     auto res = client_srun_ptr_->Post("/cgi-bin/srun_portal", params);
     check_response_valid_(res, "Failed to logout. Check network connection.");
 
-    fmt::print("User {:s} logged out from IP {:s}.\n", username_, get_params_from_response_(res->body, "online_ip"));
+    printf("User %s logged out from IP %s.\n", username_.c_str(), get_params_from_response_(res->body, "online_ip").c_str());
 
     return;   
 }
@@ -273,28 +269,71 @@ std::string BitSrunUser::xencode(const std::string& msg, const std::string& key)
     return lencode(pwd, false);
 }
 
-std::string BitSrunUser::hmac_md5(const std::string& data, const std::string& key) {
-    unsigned char* result;
-    unsigned int len = 16; // MD5 results in 128 bit hash, hence 16 bytes.
-    result = (unsigned char*)malloc(sizeof(char) * len);
+// std::string BitSrunUser::hmac_md5(const std::string& data, const std::string& key) {
+//     unsigned char* result;
+//     unsigned int len = 16; // MD5 results in 128 bit hash, hence 16 bytes.
+//     result = (unsigned char*)malloc(sizeof(char) * len);
     
-    HMAC(EVP_md5(), key.c_str(), static_cast<int>(key.length()), (unsigned char*)data.c_str(), data.length(), result, &len);
+//     HMAC(EVP_md5(), key.c_str(), static_cast<int>(key.length()), (unsigned char*)data.c_str(), data.length(), result, &len);
 
-    std::stringstream ss;
-    for (unsigned int i = 0; i < len; i++) {
-        ss << std::hex << std::setw(2) << std::setfill('0') << (uint64_t)result[i];
+//     std::stringstream ss;
+//     for (unsigned int i = 0; i < len; i++) {
+//         ss << std::hex << std::setw(2) << std::setfill('0') << (uint64_t)result[i];
+//     }
+
+//     free(result);
+//     return ss.str();
+// }
+
+
+std::string BitSrunUser::hmac_md5(const std::string& data, const std::string& key) {
+    constexpr size_t block_size = 64; // MD5 block size is 64 bytes
+
+    std::string key_block = key;
+    if (key_block.length() > block_size) {
+        MD5 md5;
+        md5.update(key_block.c_str(), key_block.length());
+        md5.finalize();
+        key_block = md5.hexdigest();
     }
 
-    free(result);
-    return ss.str();
+    key_block.resize(block_size, 0x00);
+
+    std::string o_key_pad(block_size, 0x5c);
+    std::string i_key_pad(block_size, 0x36);
+
+    for (size_t i = 0; i < block_size; ++i) {
+        o_key_pad[i] ^= key_block[i];
+        i_key_pad[i] ^= key_block[i];
+    }
+
+    MD5 md5_inner;
+    md5_inner.update(i_key_pad.c_str(), i_key_pad.length());
+    md5_inner.update(data.c_str(), data.length());
+    md5_inner.finalize();
+
+    std::string inner_result = md5_inner.hexdigest();
+
+    MD5 md5_outer;
+    md5_outer.update(o_key_pad.c_str(), o_key_pad.length());
+    md5_outer.update(inner_result.c_str(), inner_result.length());
+    md5_outer.finalize();
+
+    return md5_outer.hexdigest();
 }
 
+// std::string BitSrunUser::sha1_hex(const std::string& input) {
+//     unsigned char hash[SHA_DIGEST_LENGTH];
+//     SHA1((unsigned char*)input.c_str(), input.length(), hash);
+//     std::stringstream ss;
+//     for (int i = 0; i < SHA_DIGEST_LENGTH; i++) {
+//         ss << std::hex << std::setw(2) << std::setfill('0') << (int)hash[i];
+//     }
+//     return ss.str();
+// }
+
 std::string BitSrunUser::sha1_hex(const std::string& input) {
-    unsigned char hash[SHA_DIGEST_LENGTH];
-    SHA1((unsigned char*)input.c_str(), input.length(), hash);
-    std::stringstream ss;
-    for (int i = 0; i < SHA_DIGEST_LENGTH; i++) {
-        ss << std::hex << std::setw(2) << std::setfill('0') << (int)hash[i];
-    }
-    return ss.str();
+    SHA1 sha1;
+    sha1.update(input);
+    return sha1.hexdigest();
 }

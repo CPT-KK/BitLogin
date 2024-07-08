@@ -17,19 +17,19 @@ int main(int argc, char *argv[]) {
         } else if (action == "logout") {
             user.logout();
         } else if (action == "save") {
-            fmt::print("Saving encoded info to [userdata.dat] at current directory...\n");
+            printf("Saving encoded info to [userdata.dat] at current directory...\n");
             save_string_to_file("userdata.dat", base64_encode(username + "\n" + password));
-            fmt::print("Save successfully!\n");
+            printf("Save successfully!\n");
         }
         
         ret = 0;
         
     } catch(std::exception& e) {
-        fmt::print(FMT_ERR, "Error: {}\n", e.what());
+        printf("Error: %s\n", e.what());
 
         ret = 1;
     } catch(...) {
-        fmt::print(FMT_ERR, "Unknown error!\n");
+        printf("Unknown error!\n");
         ret = 2;
     }
 
@@ -37,10 +37,10 @@ int main(int argc, char *argv[]) {
     secure_clear_string(username);
     secure_clear_string(password);
     for (size_t i = 3; i > 0; i--) {
-        fmt::print("Program will exit in {} seconds...\r", i);
+        printf("Program will exit in %zd seconds...\r", i);
         std::this_thread::sleep_for(std::chrono::seconds(1));
     }
 
-    fmt::print("\n");
+    printf("\n");
     return ret; 
 }

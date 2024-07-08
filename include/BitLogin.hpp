@@ -6,7 +6,6 @@
 #include <string>
 #include <vector>
 
-#include <fmt/core.h>
 #include <argparse/argparse.hpp>
 
 #include "BitSrunUser.hpp"
@@ -104,7 +103,7 @@ void get_userpass_from_file(const std::string& data_path, std::string& username,
     // open file
     std::ifstream data_file(data_path, std::ios::in);
     if (!data_file.is_open()) {
-        throw std::runtime_error(fmt::format("Cannot open data file {:s}.\n", data_path));
+        throw std::runtime_error("Cannot open data file " + data_path + ".\n");
     }
 
     // read file size
@@ -137,7 +136,7 @@ void get_userpass_from_file(const std::string& data_path, std::string& username,
 void save_string_to_file(const std::string& data_path, const std::string& data) {
     std::ofstream data_file(data_path, std::ios::out);
     if (!data_file.is_open()) {
-        throw std::runtime_error(fmt::format("Cannot save to [{:s}]. Please save the following string:\n\n{:s}\n\nto where you can find it.", data_path, data));
+        throw std::runtime_error("Cannot save to [" + data_path + "]. Please save the following string:\n\n" + data + "\n\nto where you can find it.");
     }
 
     data_file.write(data.c_str(), data.size());
@@ -178,15 +177,15 @@ void arg_parser(int argc, char* argv[], std::string& action, std::string& userna
 
     // Check inputs
     if (action != "login" && action != "logout" && action != "save") {
-        throw std::runtime_error(fmt::format("Unknown action {:s}.\n", action));
+        throw std::runtime_error("Unknown action " + action + ".\n");
     }
 
     if (!std::regex_match(username, std::regex("\\d{1,20}"))) {
-        throw std::runtime_error(fmt::format("Invalid username {:s}. It must be digits.\n", username));
+        throw std::runtime_error("Invalid username " + username + ". It must be digits.\n");
     }
 
     if (password.length() < 8 || password.length() > 16) {
-        throw std::runtime_error(fmt::format("Password must be between 8 and 16 characters.\n"));
+        throw std::runtime_error("Password must be between 8 and 16 characters.\n");
     }
 
     return;

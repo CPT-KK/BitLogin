@@ -1,5 +1,5 @@
 ﻿#include "BitSrunUser.hpp"
-#include "SHA1.hpp"
+
 void secure_clear_string(std::string& str) {
     memset(&str[0], 0, str.size());
     str.clear();
@@ -42,14 +42,13 @@ BitSrunUser::~BitSrunUser() {};
 
 void BitSrunUser::login() {
     // if logged in, return
-    // if (logged_in_user_ == username_) {
-    //     printf("Warn: User %s has already logged in.\n", username_.c_str());
-    //     return;
-    // }
+    if (logged_in_user_ == username_) {
+        printf("Warn: User %s has already logged in.\n", username_.c_str());
+        return;
+    }
 
     // get challenge from token
-    // std::string token = get_token_();
-    std::string token = "319a6a41d97c1b74b0f9f477e9d99f89e4dce897a0b041d55f5f0fe280576bd8";
+    std::string token = get_token_();
 
     // prepare params for login request
     httplib::Params params;
@@ -66,7 +65,6 @@ void BitSrunUser::login() {
 
     std::string hmd5 = hashpp::get::getHMAC(hashpp::ALGORITHMS::MD5, token, ""); 
     std::string info = "{SRBX1}" + fkbase64(xencode(data, token));
-    std::string tmp = token + username_ + token + hmd5 + token + ac_id_ + token + ip_ + token + _N_CONST + token + _TYPE_CONST + token + info;
     std::string chksum = hashpp::get::getHash(hashpp::ALGORITHMS::SHA1 , token + username_ + token + hmd5 + token + ac_id_ + token + ip_ + token + _N_CONST + token + _TYPE_CONST + token + info);
 
     // update params with login data, checksum, and encrypted password
@@ -278,9 +276,3 @@ std::string BitSrunUser::xencode(const std::string& msg, const std::string& key)
 //     }
 //     return ss.str();
 // }
-
-std::string BitSrunUser::sha1_hex(const std::string& input) {
-    SHA1 sha1;
-    sha1.update(input);
-    return sha1.hexdigest();
-}

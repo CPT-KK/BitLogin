@@ -64,50 +64,7 @@ Notice that the project uses `C++20` standard.
 This project relies on the following libraries:
 
 - [cpp-httplib](https://github.com/yhirose/cpp-httplib)
-- [openssl](https://github.com/openssl/openssl)
 - [argparse](https://github.com/p-ranav/argparse)
-- [fmt](https://github.com/fmtlib/fmt/)
+- [hashpp](https://github.com/D7EAD/HashPlusPlus)
 
-> The dependencies `cpp-httplib` and `argparse` are included in the `include` directory. You need to have `openssl` and `fmt` installed on your system.
-
-### On Windows
-
-The recommended way to build the project on Windows is to use `vcpkg` and VS Code.
-
-1. Install `vcpkg` via [official installation guidance](https://learn.microsoft.com/vcpkg/get_started/get-started).
-    > Please make sure the `vcpkg` is in your `PATH`, and the environment variable `VCPKG_ROOT` is set.
-2. Install all the dependencies via `vcpkg`:
-
-    ```shell
-    vcpkg install httplib openssl argparse fmt
-    ```
-
-3. Open the project in VS Code, and add the following to the workspace `setting.json`. This step is to tell VS Code CMake to use `vcpkg` and its packages. See [here](https://learn.microsoft.com/vcpkg/get_started/get-started) for more details.
-
-    ```json
-    {
-        "cmake.configureSettings": {
-            "CMAKE_TOOLCHAIN_FILE": "C:/path/to/vcpkg/scripts/buildsystems/vcpkg.cmake"
-        }
-    }
-    ```
-
-4. Build the project using the `CMake: Build` command.
-
-### On Ubuntu
-
-For `openssl` and `fmt`, you can install them using the following command:
-
-```shell
-sudo apt install libssl-dev libfmt-dev
-```
-
-For other Linux distributions, you can use the corresponding package manager to install the dependencies.
-
-### On macOS
-
-For `openssl` and `fmt`, you can install them using the following command:
-
-```shell
-brew install openssl fmt
-```
+> The dependencies are all included in the `include` directory. 

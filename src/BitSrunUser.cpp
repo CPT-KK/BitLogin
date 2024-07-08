@@ -287,7 +287,7 @@ std::string BitSrunUser::xencode(const std::string& msg, const std::string& key)
 
 
 std::string BitSrunUser::hmac_md5(const std::string& data, const std::string& key) {
-    constexpr size_t block_size = 64; // MD5 block size is 64 bytes
+    constexpr size_t block_size = 16; // MD5 block size is 64 bytes
 
     std::string key_block = key;
     if (key_block.length() > block_size) {

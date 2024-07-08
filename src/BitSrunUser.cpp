@@ -48,8 +48,8 @@ void BitSrunUser::login() {
     // }
 
     // get challenge from token
-    std::string token = get_token_();
-    // std::string token = "a474d6ce266e695ee8e70761af75a06b40a806e697061a63141ce4d7f8a05be8";
+    // std::string token = get_token_();
+    std::string token = "319a6a41d97c1b74b0f9f477e9d99f89e4dce897a0b041d55f5f0fe280576bd8";
 
     // prepare params for login request
     httplib::Params params;
@@ -66,7 +66,8 @@ void BitSrunUser::login() {
 
     std::string hmd5 = hashpp::get::getHMAC(hashpp::ALGORITHMS::MD5, token, ""); 
     std::string info = "{SRBX1}" + fkbase64(xencode(data, token));
-    std::string chksum = sha1_hex(token + username_ + token + hmd5 + token + ac_id_ + token + ip_ + token + _N_CONST + token + _TYPE_CONST + token + info);
+    std::string tmp = token + username_ + token + hmd5 + token + ac_id_ + token + ip_ + token + _N_CONST + token + _TYPE_CONST + token + info;
+    std::string chksum = hashpp::get::getHash(hashpp::ALGORITHMS::SHA1 , token + username_ + token + hmd5 + token + ac_id_ + token + ip_ + token + _N_CONST + token + _TYPE_CONST + token + info);
 
     // update params with login data, checksum, and encrypted password
     params.emplace("password", "{MD5}" + hmd5);
@@ -267,22 +268,6 @@ std::string BitSrunUser::xencode(const std::string& msg, const std::string& key)
     }
     return lencode(pwd, false);
 }
-
-// std::string BitSrunUser::hmac_md5(const std::string& data, const std::string& key) {
-//     unsigned char* result;
-//     unsigned int len = 16; // MD5 results in 128 bit hash, hence 16 bytes.
-//     result = (unsigned char*)malloc(sizeof(char) * len);
-    
-//     HMAC(EVP_md5(), key.c_str(), static_cast<int>(key.length()), (unsigned char*)data.c_str(), data.length(), result, &len);
-
-//     std::stringstream ss;
-//     for (unsigned int i = 0; i < len; i++) {
-//         ss << std::hex << std::setw(2) << std::setfill('0') << (uint64_t)result[i];
-//     }
-
-//     free(result);
-//     return ss.str();
-// }
 
 // std::string BitSrunUser::sha1_hex(const std::string& input) {
 //     unsigned char hash[SHA_DIGEST_LENGTH];

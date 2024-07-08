@@ -42,13 +42,14 @@ BitSrunUser::~BitSrunUser() {};
 
 void BitSrunUser::login() {
     // if logged in, return
-    if (logged_in_user_ == username_) {
-        printf("Warn: User %s has already logged in.\n", username_.c_str());
-        return;
-    }
+    // if (logged_in_user_ == username_) {
+    //     printf("Warn: User %s has already logged in.\n", username_.c_str());
+    //     return;
+    // }
 
     // get challenge from token
     std::string token = get_token_();
+    // std::string token = "a474d6ce266e695ee8e70761af75a06b40a806e697061a63141ce4d7f8a05be8";
 
     // prepare params for login request
     httplib::Params params;
@@ -63,7 +64,7 @@ void BitSrunUser::login() {
     // prepare login data to generate checksum
     std::string data = "{\"username\":\"" + username_ + "\",\"password\":\"" + password_ + "\",\"acid\":\"" + ac_id_ + "\",\"ip\":\"" + ip_ + "\",\"enc_ver\":\"srun_bx1\"}";
 
-    std::string hmd5 = hashpp::get::getHMAC(hashpp::ALGORITHMS::MD5, "", "a474d6ce266e695ee8e70761af75a06b40a806e697061a63141ce4d7f8a05be8"); 
+    std::string hmd5 = hashpp::get::getHMAC(hashpp::ALGORITHMS::MD5, token, ""); 
     std::string info = "{SRBX1}" + fkbase64(xencode(data, token));
     std::string chksum = sha1_hex(token + username_ + token + hmd5 + token + ac_id_ + token + ip_ + token + _N_CONST + token + _TYPE_CONST + token + info);
 

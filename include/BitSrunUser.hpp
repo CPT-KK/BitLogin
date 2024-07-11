@@ -10,7 +10,9 @@
 
 #include <httplib.h>
 
-#include "hashpp.h"
+#include "sha1.h"
+#include "hmac.h"
+#include "md5.h"
 
 #define _TYPE_CONST "1"
 #define _N_CONST "200"
@@ -46,8 +48,8 @@ private:
     std::vector<uint64_t> sencode(const std::string& msg, bool key);
     std::string lencode(std::vector<uint64_t>& msg, bool key);
     std::string xencode(const std::string& msg, const std::string& key);
-    std::string hmac_md5(const std::string& data, const std::string& key);
-    std::string sha1_hex(const std::string& input);
+
+    SHA1 sha1;
 
 };
 #endif  // BITSRUN_USER_H   

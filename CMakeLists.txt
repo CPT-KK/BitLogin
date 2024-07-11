@@ -20,6 +20,7 @@ configure_file(
 
 # Include directories
 include_directories(${CMAKE_CURRENT_SOURCE_DIR}/include)
+include_directories(${CMAKE_CURRENT_SOURCE_DIR}/include/hashlib)
 include_directories(${CMAKE_BINARY_DIR})
 
 # Add source files
@@ -30,3 +31,5 @@ add_executable(${PROJECT_NAME} "${SRC_LIST}")
 add_custom_command(TARGET ${PROJECT_NAME} POST_BUILD
                    COMMAND ${CMAKE_COMMAND} -E echo
                    "Executable path: $<TARGET_FILE:${PROJECT_NAME}>")
+
+install(TARGETS ${PROJECT_NAME} DESTINATION /usr/bin)

@@ -63,9 +63,9 @@ void BitSrunUser::login() {
     // prepare login data to generate checksum
     std::string data = "{\"username\":\"" + username_ + "\",\"password\":\"" + password_ + "\",\"acid\":\"" + ac_id_ + "\",\"ip\":\"" + ip_ + "\",\"enc_ver\":\"srun_bx1\"}";
 
-    std::string hmd5 = hashpp::get::getHMAC(hashpp::ALGORITHMS::MD5, token, ""); 
+    std::string hmd5 = hmac<MD5>("", token);
     std::string info = "{SRBX1}" + fkbase64(xencode(data, token));
-    std::string chksum = hashpp::get::getHash(hashpp::ALGORITHMS::SHA1 , token + username_ + token + hmd5 + token + ac_id_ + token + ip_ + token + _N_CONST + token + _TYPE_CONST + token + info);
+    std::string chksum = sha1(token + username_ + token + hmd5 + token + ac_id_ + token + ip_ + token + _N_CONST + token + _TYPE_CONST + token + info);
 
     // update params with login data, checksum, and encrypted password
     params.emplace("password", "{MD5}" + hmd5);
@@ -266,13 +266,3 @@ std::string BitSrunUser::xencode(const std::string& msg, const std::string& key)
     }
     return lencode(pwd, false);
 }
-
-// std::string BitSrunUser::sha1_hex(const std::string& input) {
-//     unsigned char hash[SHA_DIGEST_LENGTH];
-//     SHA1((unsigned char*)input.c_str(), input.length(), hash);
-//     std::stringstream ss;
-//     for (int i = 0; i < SHA_DIGEST_LENGTH; i++) {
-//         ss << std::hex << std::setw(2) << std::setfill('0') << (int)hash[i];
-//     }
-//     return ss.str();
-// }

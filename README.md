@@ -66,5 +66,6 @@ This project relies on the following libraries:
 - [cpp-httplib](https://github.com/yhirose/cpp-httplib)
 - [argparse](https://github.com/p-ranav/argparse)
 - [hashpp](https://github.com/D7EAD/HashPlusPlus)
+- [base64](https://github.com/tobiaslocker/base64)
 
 > The dependencies are all included in the `include` directory. 

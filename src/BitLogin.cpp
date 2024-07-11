@@ -18,7 +18,7 @@ int main(int argc, char *argv[]) {
             user.logout();
         } else if (action == "save") {
             printf("Saving encoded info to [userdata.dat] at current directory...\n");
-            save_string_to_file("userdata.dat", base64_encode(username + "\n" + password));
+            save_string_to_file("userdata.dat", base64::to_base64(username + "\n" + password));
             printf("Save successfully!\n");
         }
         

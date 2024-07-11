@@ -119,8 +119,7 @@ void get_userpass_from_file(const std::string& data_path, std::string& username,
     data_file.close();
 
     // get username and password
-    std::vector<uint8_t> decoded_data = base64_decode(encoded_string);
-    std::string decoded_string(decoded_data.begin(), decoded_data.end());
+    std::string decoded_string = base64::from_base64(encoded_string);
     auto seperator = decoded_string.find("\n");
     if (seperator == std::string::npos) {
         throw std::runtime_error("Invalid data file.\n");
@@ -131,6 +130,7 @@ void get_userpass_from_file(const std::string& data_path, std::string& username,
     if (username.back() == '\r') {
         username.pop_back();
     }
+
 }
 
 void save_string_to_file(const std::string& data_path, const std::string& data) {
@@ -187,7 +187,7 @@ void arg_parser(int argc, char* argv[], std::string& action, std::string& userna
     if (password.length() < 8 || password.length() > 16) {
         throw std::runtime_error("Password must be between 8 and 16 characters.\n");
     }
-
+    
     return;
 }
 

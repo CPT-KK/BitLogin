@@ -57,7 +57,7 @@ This is an C++ implementation of BIT Srun login/logout client.
 
 ## For development
 
-Notice that the project uses `C+17` standard.
+Notice that the project uses `C++17` standard.
 
 ### Prerequisites
 

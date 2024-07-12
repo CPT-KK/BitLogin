@@ -1,4 +1,6 @@
-# For Openwrt use
+# For Openwrt build only
+# For building on normal system, use CMake
+
 include $(TOPDIR)/rules.mk
  
 PKG_NAME:=BitLogin

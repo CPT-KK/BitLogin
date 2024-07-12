@@ -1,6 +1,6 @@
 ﻿# BitLogin
 
-BIT 10.0.0.55 登录登出的 C++ 实现。
+北理 BIT 校园网网关 10.0.0.55 登录登出的 C++ 实现。
 
 This is an C++ implementation of BIT Srun login/logout client.
 
@@ -11,10 +11,15 @@ This is an C++ implementation of BIT Srun login/logout client.
 - Windows $\ge$ 10
 - Ubuntu $\ge$ 20.04
 - macOS $\ge$ 10.12
+- Openwrt
+
+> 本仓库中含有的 `Makefile` 文件只能用于配合 Openwrt SDK 在 Openwrt 软路由系统上进行编译。具体请参考 [Openwrt SDK](https://openwrt.org/docs/guide-developer/using_the_sdk) 的使用方法
 
 ### 下载与安装
 
 右侧 [Release](https://github.com/CPT-KK/BitLogin/releases) 页面找到对应自己系统架构的可执行文件
+
+> macOS 的用户请选择含 `Darwin` 的可执行文件，并注意自己的系统架构是 `x86_64` 还是 `arm64`
 
 ### 程序的调用格式
 
@@ -48,7 +53,7 @@ This is an C++ implementation of BIT Srun login/logout client.
     1120240000
     abcdef123456
     ```
-- （**生成base64 编码的账号密码文件**） `BitLogin -a save -u 1120240000 -p abcdef123456`
+- （**生成 base64 编码的账号密码文件**） `BitLogin -a save -u 1120240000 -p abcdef123456`
 
 ### 如何提供 `-d` 需要的 base64 编码的文件
 
@@ -61,11 +66,9 @@ Notice that the project uses `C++17` standard.
 
 ### Prerequisites
 
-This project relies on the following libraries:
+This project includes the following libraries:
 
 - [cpp-httplib](https://github.com/yhirose/cpp-httplib)
 - [argparse](https://github.com/p-ranav/argparse)
-- [hashpp](https://github.com/D7EAD/HashPlusPlus)
+- [hash-library](https://github.com/stbrumme/hash-library)
 - [base64](https://github.com/tobiaslocker/base64)
-
-> The dependencies are all included in the `include` directory. 

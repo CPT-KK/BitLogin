@@ -13,7 +13,7 @@ This is an C++ implementation of BIT Srun login/logout client.
 - macOS $\ge$ 10.12
 - Openwrt
 
-> 本仓库中含有的 `Makefile` 文件只能用于配合 Openwrt SDK 在 Openwrt 软路由系统上进行编译。具体请参考 [Openwrt SDK](https://openwrt.org/docs/guide-developer/using_the_sdk) 的使用方法
+> 本仓库中含有的 `Makefile` 文件只能用于配合 Openwrt SDK 在 Openwrt 软路由系统上进行编译。具体请参考 [Openwrt SDK](https://openwrt.org/docs/guide-developer/using_the_sdk) 的使用方法和 [OpenWrt 手动编译 ipk](https://blog.csdn.net/CoolBoySilverBullet/article/details/121077482)
 
 ### 下载与安装
 

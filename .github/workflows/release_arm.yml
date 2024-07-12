@@ -35,27 +35,8 @@ jobs:
           arch: aarch64
           distro: ubuntu20.04
 
-      - name: Set CMake version
-        uses: jwlawson/actions-setup-cmake@v2
-        with:
-          cmake-version: '3.29.0'
-
-      - name: CMake Configure
-        run: >
-          cmake -B ${{ github.workspace }}/build
-          -DCMAKE_CXX_COMPILER=${{ matrix.cpp_compiler }}
-          -DCMAKE_C_COMPILER=${{ matrix.c_compiler }}
-          -DCMAKE_BUILD_TYPE=${{ matrix.build_type }}
-          -DCMAKE_POSITION_INDEPENDENT_CODE=TRUE
-          -S ${{ github.workspace }}
-      
-      - name: CMake Build
-        run: cmake --build ${{ github.workspace }}/build --config ${{ matrix.build_type }}
-
-      - name: Set output name
-        id: strings
-        shell: bash
         run: |
+          cmake -B ${{ github.workspace }}/build -DCMAKE_CXX_COMPILER=${{ matrix.cpp_compiler }} -DCMAKE_C_COMPILER=${{ matrix.c_compiler }} -DCMAKE_BUILD_TYPE=${{ matrix.build_type }} -DCMAKE_POSITION_INDEPENDENT_CODE=TRUE -S ${{ github.workspace }}cmake --build ${{ github.workspace }}/build --config ${{ matrix.build_type }}
           artifact_name_raw=`cat build/execname`
           echo "The artifact will be named ${artifact_name_raw}"
           echo "artifact_name_full=${artifact_name_raw}" >> "$GITHUB_OUTPUT"

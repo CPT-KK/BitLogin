@@ -6,7 +6,6 @@ on:
       - created
 
 env:
-  VCPKG_ROOT: C:/vcpkg
   artifact_name: BitLogin
 
 jobs:
@@ -65,7 +64,6 @@ jobs:
         -S ${{ github.workspace }}
     
     - name: CMake Build
-      # Build your program with the given configuration. Note that --config is needed because the default Windows generator is a multi-config generator (Visual Studio generator).
       run: cmake --build ${{ github.workspace }}/build --config ${{ matrix.build_type }}
 
     - name: Set output name

@@ -20,15 +20,16 @@ jobs:
             cpp_compiler: cl
             install-cmd: echo "No dependencies to install on Windows."
             build_path_prefix: Release/
-            artifact_name: BitLogin
+            artifact_name: BitLogin-windows-x64
             artifact_suffix: .exe
-          - os: ubuntu-20.04
+          - os: ubuntu-latest
             c_compiler: gcc
             cpp_compiler: g++
             install-cmd: sudo apt-get update && sudo apt-get install -y libssl-dev libfmt-dev
             build_path_prefix: ""
-            artifact_name: BitLogin
+            artifact_name: BitLogin-linux-x64-compat
             artifact_suffix: ""
+            compile_flags: "-static-libgcc -static-libstdc++"
           - os: macos-14
             c_compiler: gcc
             cpp_compiler: g++
@@ -37,30 +38,33 @@ jobs:
             artifact_name: BitLogin-macos-universal
             artifact_suffix: ""
             cmake_arch_flags: "-DCMAKE_OSX_ARCHITECTURES='x86_64;arm64'"
+            final_executable_name: "BitLogin"
           - os: ubuntu-latest
             target_arch: aarch64
             c_compiler: aarch64-linux-gnu-gcc
             cpp_compiler: aarch64-linux-gnu-g++
             install-cmd: |
               sudo apt-get update
-              sudo apt-get install -y gcc-aarch64-linux-gnu g++-aarch64-linux-gnu libssl-dev:arm64
+              sudo apt-get install -y gcc-aarch64-linux-gnu g++-aarch64-linux-gnu libc6-dev-arm64-cross libssl-dev:arm64
             build_path_prefix: ""
-            artifact_name: BitLogin-aarch64
+            artifact_name: BitLogin-linux-aarch64
             artifact_suffix: ""
             cmake_arch_flags: "-DCMAKE_SYSTEM_NAME=Linux -DCMAKE_SYSTEM_PROCESSOR=aarch64"
             cmake_cross_compile_flags: "-DCMAKE_C_COMPILER=aarch64-linux-gnu-gcc -DCMAKE_CXX_COMPILER=aarch64-linux-gnu-g++ -DCMAKE_FIND_ROOT_PATH_MODE_PROGRAM=NEVER -DCMAKE_FIND_ROOT_PATH_MODE_LIBRARY=ONLY -DCMAKE_FIND_ROOT_PATH_MODE_INCLUDE=ONLY -DCMAKE_FIND_ROOT_PATH_MODE_PACKAGE=ONLY"
+            final_executable_name: "BitLogin"
           - os: ubuntu-latest
             target_arch: armv7
             c_compiler: arm-linux-gnueabihf-gcc
             cpp_compiler: arm-linux-gnueabihf-g++
             install-cmd: |
               sudo apt-get update
-              sudo apt-get install -y gcc-arm-linux-gnueabihf g++-arm-linux-gnueabihf libssl-dev:armhf
+              sudo apt-get install -y gcc-arm-linux-gnueabihf g++-arm-linux-gnueabihf libc6-dev-armhf-cross libssl-dev:armhf
             build_path_prefix: ""
-            artifact_name: BitLogin-armv7
+            artifact_name: BitLogin-linux-armv7
             artifact_suffix: ""
             cmake_arch_flags: "-DCMAKE_SYSTEM_NAME=Linux -DCMAKE_SYSTEM_PROCESSOR=arm"
             cmake_cross_compile_flags: "-DCMAKE_C_COMPILER=arm-linux-gnueabihf-gcc -DCMAKE_CXX_COMPILER=arm-linux-gnueabihf-g++ -DCMAKE_FIND_ROOT_PATH_MODE_PROGRAM=NEVER -DCMAKE_FIND_ROOT_PATH_MODE_LIBRARY=ONLY -DCMAKE_FIND_ROOT_PATH_MODE_INCLUDE=ONLY -DCMAKE_FIND_ROOT_PATH_MODE_PACKAGE=ONLY"
+            final_executable_name: "BitLogin"
 
     steps:
     - uses: actions/checkout@v4
@@ -88,6 +92,7 @@ jobs:
         -DCMAKE_POSITION_INDEPENDENT_CODE=TRUE
         ${{ matrix.cmake_arch_flags }}
         ${{ matrix.cmake_cross_compile_flags }}
+        -DCMAKE_EXE_LINKER_FLAGS="${{ matrix.compile_flags }}"
         -S ${{ github.workspace }}
 
     - name: CMake Build
@@ -109,7 +114,7 @@ jobs:
       uses: svenstaro/upload-release-action@v2
       with:
         asset_name: ${{ matrix.artifact_name }}${{ matrix.artifact_suffix }}
-        file: ${{ github.workspace }}/build/${{ matrix.build_path_prefix }}${{ matrix.artifact_name }}${{ matrix.artifact_suffix }}
+        file: ${{ github.workspace }}/build/${{ matrix.build_path_prefix }}${{ matrix.final_executable_name || matrix.artifact_name }}${{ matrix.artifact_suffix }}
         tag: ${{ github.ref }}
         overwrite: true
 

@@ -28,7 +28,7 @@ jobs:
             cpp_compiler: g++
             install-cmd: sudo apt-get update && sudo apt-get install -y libssl-dev libfmt-dev
             build_path_prefix: ""
-            artifact_name: BitLogin-linux-x64-compat
+            artifact_name: BitLogin-linux-x64
             artifact_suffix: ""
             compile_flags: "-static-libgcc -static-libstdc++"
             final_executable_name: "BitLogin"

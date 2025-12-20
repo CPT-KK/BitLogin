@@ -80,7 +80,7 @@ jobs:
                 echo "deb [arch=armhf] http://ports.ubuntu.com/ubuntu-ports ${CODENAME}-security main restricted universe multiverse" | sudo tee -a /etc/apt/sources.list.d/armhf.list
                 sudo apt-get clean
                 sudo apt-get update
-                sudo apt-get install -y gcc-aarch64-linux-gnu g++-aarch64-linux-gnu libc6-dev-armhf-cross libssl-dev:armhf
+                sudo apt-get install -y gcc-arm-linux-gnueabihf g++-arm-linux-gnueabihf libc6-dev-armhf-cross libssl-dev:armhf
             build_path_prefix: ""
             artifact_name: BitLogin-linux-armv7
             artifact_suffix: ""

@@ -44,6 +44,7 @@ jobs:
             c_compiler: aarch64-linux-gnu-gcc
             cpp_compiler: aarch64-linux-gnu-g++
             install-cmd: |
+              sudo dpkg --add-architecture arm64
               sudo apt-get update
               sudo apt-get install -y gcc-aarch64-linux-gnu g++-aarch64-linux-gnu libc6-dev-arm64-cross libssl-dev:arm64
             build_path_prefix: ""
@@ -57,6 +58,7 @@ jobs:
             c_compiler: arm-linux-gnueabihf-gcc
             cpp_compiler: arm-linux-gnueabihf-g++
             install-cmd: |
+              sudo dpkg --add-architecture armhf
               sudo apt-get update
               sudo apt-get install -y gcc-arm-linux-gnueabihf g++-arm-linux-gnueabihf libc6-dev-armhf-cross libssl-dev:armhf
             build_path_prefix: ""
@@ -115,6 +117,6 @@ jobs:
       with:
         asset_name: ${{ matrix.artifact_name }}${{ matrix.artifact_suffix }}
         file: ${{ github.workspace }}/build/${{ matrix.build_path_prefix }}${{ matrix.final_executable_name || matrix.artifact_name }}${{ matrix.artifact_suffix }}
-        tag: ${{ github.ref }}
+        tag: ${{ github.event.release.tag_name }}
         overwrite: true
 

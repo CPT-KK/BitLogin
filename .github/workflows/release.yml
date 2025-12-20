@@ -22,6 +22,7 @@ jobs:
             build_path_prefix: Release/
             artifact_name: BitLogin-windows-x64
             artifact_suffix: .exe
+            final_executable_name: "BitLogin"
           - os: ubuntu-latest
             c_compiler: gcc
             cpp_compiler: g++
@@ -30,6 +31,7 @@ jobs:
             artifact_name: BitLogin-linux-x64-compat
             artifact_suffix: ""
             compile_flags: "-static-libgcc -static-libstdc++"
+            final_executable_name: "BitLogin"
           - os: macos-14
             c_compiler: gcc
             cpp_compiler: g++
@@ -39,7 +41,7 @@ jobs:
             artifact_suffix: ""
             cmake_arch_flags: "-DCMAKE_OSX_ARCHITECTURES='x86_64;arm64'"
             final_executable_name: "BitLogin"
-          - os: ubuntu-latest
+          - os: ubuntu-22.04
             target_arch: aarch64
             c_compiler: aarch64-linux-gnu-gcc
             cpp_compiler: aarch64-linux-gnu-g++
@@ -53,7 +55,7 @@ jobs:
             cmake_arch_flags: "-DCMAKE_SYSTEM_NAME=Linux -DCMAKE_SYSTEM_PROCESSOR=aarch64"
             cmake_cross_compile_flags: "-DCMAKE_C_COMPILER=aarch64-linux-gnu-gcc -DCMAKE_CXX_COMPILER=aarch64-linux-gnu-g++ -DCMAKE_FIND_ROOT_PATH_MODE_PROGRAM=NEVER -DCMAKE_FIND_ROOT_PATH_MODE_LIBRARY=ONLY -DCMAKE_FIND_ROOT_PATH_MODE_INCLUDE=ONLY -DCMAKE_FIND_ROOT_PATH_MODE_PACKAGE=ONLY"
             final_executable_name: "BitLogin"
-          - os: ubuntu-latest
+          - os: ubuntu-22.04
             target_arch: armv7
             c_compiler: arm-linux-gnueabihf-gcc
             cpp_compiler: arm-linux-gnueabihf-g++

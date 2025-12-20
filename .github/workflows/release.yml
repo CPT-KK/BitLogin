@@ -47,12 +47,11 @@ jobs:
             cpp_compiler: aarch64-linux-gnu-g++
             install-cmd: |
               sudo dpkg --add-architecture arm64
-              sudo cp /etc/apt/sources.list /etc/apt/sources.list.bak
-              echo "deb [arch=arm64] http://ports.ubuntu.com/ubuntu-ports/ $(lsb_release -cs) main restricted universe multiverse" | sudo tee /etc/apt/sources.list.d/arm64.list
-              echo "deb [arch=arm64] http://ports.ubuntu.com/ubuntu-ports/ $(lsb_release -cs)-updates main restricted universe multiverse" | sudo tee /etc/apt/sources.list.d/arm64.list
-              echo "deb [arch=arm64] http://ports.ubuntu.com/ubuntu-ports/ $(lsb_release -cs)-security main restricted universe multiverse" | sudo tee /etc/apt/sources.list.d/arm64.list
+              echo "deb [arch=amd64,arm64] http://archive.ubuntu.com/ubuntu $(lsb_release -cs) main restricted universe multiverse" | sudo tee /etc/apt/sources.list.d/armubuntu-multiarch4.list
+              echo "deb [arch=amd64,arm64] http://archive.ubuntu.com/ubuntu $(lsb_release -cs)-updates main restricted universe multiverse" | sudo tee -a /etc/apt/sources.list.d/ubuntu-multiarch.list
+              echo "deb [arch=amd64,arm64] http://security.ubuntu.com/ubuntu $(lsb_release -cs)-security main restricted universe multiverse" | sudo tee -a /etc/apt/sources.list.d/ubuntu-multiarch.list
               sudo apt-get update
-              sudo apt-get install -y gcc-aarch64-linux-gnu g++-aarch64-linux-gnu libc6-dev-arm64-cross libssl-dev:arm64
+              sudo apt-get install -y gcc-aarch64-linux-gnu g++-aarch64-linux-gnu libc6-dev:arm64 libssl-dev:arm64
             build_path_prefix: ""
             artifact_name: BitLogin-linux-aarch64
             artifact_suffix: ""
@@ -65,12 +64,11 @@ jobs:
             cpp_compiler: arm-linux-gnueabihf-g++
             install-cmd: |
                 sudo dpkg --add-architecture armhf
-                sudo cp /etc/apt/sources.list /etc/apt/sources.list.bak
-                echo "deb [arch=armhf] http://ports.ubuntu.com/ubuntu-ports $(lsb_release -cs) main restricted universe multiverse" | sudo tee /etc/apt/sources.list.d/armhf.list
-                echo "deb [arch=armhf] http://ports.ubuntu.com/ubuntu-ports $(lsb_release -cs)-updates main restricted universe multiverse" | sudo tee -a /etc/apt/sources.list.d/armhf.list
-                echo "deb [arch=armhf] http://ports.ubuntu.com/ubuntu-ports $(lsb_release -cs)-security main restricted universe multiverse" | sudo tee -a /etc/apt/sources.list.d/armhf.list
+                echo "deb [arch=amd64,armhf] http://archive.ubuntu.com/ubuntu $(lsb_release -cs) main restricted universe multiverse" | sudo tee /etc/apt/sources.list.d/ubuntu-multiarch.list
+                echo "deb [arch=amd64,armhf] http://archive.ubuntu.com/ubuntu $(lsb_release -cs)-updates main restricted universe multiverse" | sudo tee -a /etc/apt/sources.list.d/ubuntu-multiarch.list
+                echo "deb [arch=amd64,armhf] http://security.ubuntu.com/ubuntu $(lsb_release -cs)-security main restricted universe multiverse" | sudo tee -a /etc/apt/sources.list.d/ubuntu-multiarch.list
                 sudo apt-get update
-                sudo apt-get install -y gcc-arm-linux-gnueabihf g++-arm-linux-gnueabihf libc6-dev-armhf-cross libssl-dev:armhf
+                sudo apt-get install -y gcc-arm-linux-gnueabihf g++-arm-linux-gnueabihf libc6-dev:armhf libssl-dev:armhf
             build_path_prefix: ""
             artifact_name: BitLogin-linux-armv7
             artifact_suffix: ""

@@ -47,6 +47,11 @@ jobs:
             cpp_compiler: aarch64-linux-gnu-g++
             install-cmd: |
               sudo dpkg --add-architecture arm64
+              sudo sed -i 's/cn.archive.ubuntu.com/ports.ubuntu.com/g; s/archive.ubuntu.com/ports.ubuntu.com/g; s/security.ubuntu.com/ports.ubuntu.com/g' /etc/apt/sources.list
+              sudo sed -i '/arm64/s/^/#/' /etc/apt/sources.list
+              echo "deb [arch=arm64] http://ports.ubuntu.com/ubuntu-ports/ $(lsb_release -cs) main restricted universe multiverse" | sudo tee -a /etc/apt/sources.list
+              echo "deb [arch=arm64] http://ports.ubuntu.com/ubuntu-ports/ $(lsb_release -cs)-updates main restricted universe multiverse" | sudo tee -a /etc/apt/sources.list
+              echo "deb [arch=arm64] http://ports.ubuntu.com/ubuntu-ports/ $(lsb_release -cs)-security main restricted universe multiverse" | sudo tee -a /etc/apt/sources.list
               sudo apt-get update
               sudo apt-get install -y gcc-aarch64-linux-gnu g++-aarch64-linux-gnu libc6-dev-arm64-cross libssl-dev:arm64
             build_path_prefix: ""
@@ -61,6 +66,11 @@ jobs:
             cpp_compiler: arm-linux-gnueabihf-g++
             install-cmd: |
               sudo dpkg --add-architecture armhf
+              sudo sed -i 's/cn.archive.ubuntu.com/ports.ubuntu.com/g; s/archive.ubuntu.com/ports.ubuntu.com/g; s/security.ubuntu.com/ports.ubuntu.com/g' /etc/apt/sources.list
+              sudo sed -i '/armhf/s/^/#/' /etc/apt/sources.list
+              echo "deb [arch=armhf] http://ports.ubuntu.com/ubuntu-ports/ $(lsb_release -cs) main restricted universe multiverse" | sudo tee -a /etc/apt/sources.list
+              echo "deb [arch=armhf] http://ports.ubuntu.com/ubuntu-ports/ $(lsb_release -cs)-updates main restricted universe multiverse" | sudo tee -a /etc/apt/sources.list
+              echo "deb [arch=armhf] http://ports.ubuntu.com/ubuntu-ports/ $(lsb_release -cs)-security main restricted universe multiverse" | sudo tee -a /etc/apt/sources.list
               sudo apt-get update
               sudo apt-get install -y gcc-arm-linux-gnueabihf g++-arm-linux-gnueabihf libc6-dev-armhf-cross libssl-dev:armhf
             build_path_prefix: ""

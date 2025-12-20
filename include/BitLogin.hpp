@@ -19,6 +19,40 @@ void arg_parser(int argc, char* argv[], std::string& action, std::string& userna
 
 #ifdef _WIN32
 #include <windows.h>
+
+// RAII wrapper for Windows console mode
+class WindowsConsoleModeGuard {
+public:
+    explicit WindowsConsoleModeGuard(HANDLE hConsole, DWORD newMode) : hConsole_(hConsole), oldMode_(0) {
+        if (!GetConsoleMode(hConsole_, &oldMode_)) {
+            // If GetConsoleMode fails, we can't restore, but we'll note it.
+            // This might happen if input is redirected.
+            canRestore_ = false;
+        } else {
+            canRestore_ = true;
+            if (!SetConsoleMode(hConsole_, newMode)) {
+                // Failed to set new mode, mark that we shouldn't try to restore to a mode we didn't set
+                canRestore_ = false;
+            }
+        }
+    }
+
+    ~WindowsConsoleModeGuard() {
+        if (canRestore_) {
+            SetConsoleMode(hConsole_, oldMode_);
+        }
+    }
+
+    // Prevent copying
+    WindowsConsoleModeGuard(const WindowsConsoleModeGuard&) = delete;
+    WindowsConsoleModeGuard& operator=(const WindowsConsoleModeGuard&) = delete;
+
+private:
+    HANDLE hConsole_;
+    DWORD oldMode_;
+    bool canRestore_;
+};
+
 // Windows: get_password_from_console
 std::string get_password_from_console(const char* prompt, bool show_asterisk) {
     const char BACKSPACE = 8;
@@ -30,13 +64,21 @@ std::string get_password_from_console(const char* prompt, bool show_asterisk) {
     std::cout << prompt;
     std::cout.flush();
 
-    DWORD con_mode;
     DWORD dwRead;
-
     HANDLE hIn = GetStdHandle(STD_INPUT_HANDLE);
 
-    GetConsoleMode(hIn, &con_mode);
-    SetConsoleMode(hIn, con_mode & ~(ENABLE_ECHO_INPUT | ENABLE_LINE_INPUT));
+    // Use RAII guard to manage console mode
+    WindowsConsoleModeGuard modeGuard(hIn, 
+        []() { // Get current mode and modify it
+            DWORD currentMode;
+            HANDLE h = GetStdHandle(STD_INPUT_HANDLE);
+            if (GetConsoleMode(h, &currentMode)) {
+                return currentMode & ~(ENABLE_ECHO_INPUT | ENABLE_LINE_INPUT);
+            }
+            return DWORD(0); // Return 0 if failed to get mode, SetConsoleMode will fail gracefully
+        }()
+    );
+    // modeGuard will automatically restore the original mode when it goes out of scope
 
     while (ReadConsoleA(hIn, &ch, 1, &dwRead, NULL) && ch != RETURN) {
         if (ch == BACKSPACE) {
@@ -53,14 +95,45 @@ std::string get_password_from_console(const char* prompt, bool show_asterisk) {
     }
     std::cout << std::endl;
 
-    SetConsoleMode(hIn, con_mode);
-
     return password;
 }
 
 #elif __linux__ || __unix__ || __posix__ || __APPLE__
 #include <termios.h>
 #include <unistd.h>
+
+// RAII wrapper for Unix terminal mode
+class UnixTerminalModeGuard {
+public:
+    explicit UnixTerminalModeGuard(int fd) : fd_(fd), isValid_(false) {
+        if (tcgetattr(fd_, &oldTermios_) == 0) {
+            isValid_ = true;
+            struct termios newTermios = oldTermios_;
+            newTermios.c_lflag &= ~(ICANON | ECHO);
+            if (tcsetattr(fd_, TCSANOW, &newTermios) != 0) {
+                // Failed to set new mode, mark invalid
+                isValid_ = false;
+            }
+        }
+        // If tcgetattr fails, isValid_ remains false, and destructor will do nothing
+    }
+
+    ~UnixTerminalModeGuard() {
+        if (isValid_) {
+            tcsetattr(fd_, TCSANOW, &oldTermios_);
+        }
+    }
+
+    // Prevent copying
+    UnixTerminalModeGuard(const UnixTerminalModeGuard&) = delete;
+    UnixTerminalModeGuard& operator=(const UnixTerminalModeGuard&) = delete;
+
+private:
+    int fd_;
+    struct termios oldTermios_;
+    bool isValid_;
+};
+
 // Linux & Apple: get_password_from_console
 std::string get_password_from_console(const char* prompt, bool show_asterisk) {
     const char BACKSPACE = 127;
@@ -72,13 +145,11 @@ std::string get_password_from_console(const char* prompt, bool show_asterisk) {
     std::cout << prompt;
     std::cout.flush();
 
-    struct termios tty;
-    tcgetattr(STDIN_FILENO, &tty);
-    struct termios tty_orig = tty;
-    tty.c_lflag &= ~(ICANON | ECHO);
-    tcsetattr(STDIN_FILENO, TCSANOW, &tty);
+    // Use RAII guard to manage terminal mode
+    UnixTerminalModeGuard modeGuard(STDIN_FILENO);
+    // modeGuard will automatically restore the original mode when it goes out of scope
 
-    while (read(STDIN_FILENO, &ch, 1) && ch != RETURN) {
+    while (read(STDIN_FILENO, &ch, 1) > 0 && ch != RETURN) {
         if (ch == BACKSPACE) {
             if (password.length() != 0) {
                 if (show_asterisk)
@@ -92,8 +163,6 @@ std::string get_password_from_console(const char* prompt, bool show_asterisk) {
         }
     }
     std::cout << std::endl;
-
-    tcsetattr(STDIN_FILENO, TCSANOW, &tty_orig);
 
     return password;
 }
@@ -127,8 +196,12 @@ void get_userpass_from_file(const std::string& data_path, std::string& username,
     username = decoded_string.substr(0, seperator);
     password = decoded_string.substr(seperator + 1);
 
-    if (username.back() == '\r') {
+    // Remove possible trailing \r characters
+    if (!username.empty() && username.back() == '\r') {
         username.pop_back();
+    }
+    if (!password.empty() && password.back() == '\r') {
+        password.pop_back();
     }
 
 }
@@ -152,6 +225,12 @@ void arg_parser(int argc, char* argv[], std::string& action, std::string& userna
     program.add_argument("-d", "--data").help("The base64 encoded data file storing the username and password.");
     program.add_description(PROJECT_DEF);
     program.add_epilog(PROJECT_COPY);
+
+    // If no arguments provided, show help
+    if (argc == 1) {
+        std::cout << program;  // This outputs the help message
+        exit(0);  // Exit after showing help
+    }
 
     program.parse_args(argc, argv);
 

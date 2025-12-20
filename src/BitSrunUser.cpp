@@ -30,6 +30,11 @@ BitSrunUser::BitSrunUser(const std::string &username, const std::string &passwor
         ac_id_ = get_params_from_url_(res_srun->location, "ac_id");
     }
 
+    // Check if ac_id was successfully obtained
+    if (ac_id_.empty()) {
+        throw std::runtime_error("Failed to obtain ac_id from the gateway. The authentication process cannot proceed.");
+    }
+
     // Check current login status and get device `online_ip`
     std::string login_status = get_login_status_();
     ip_ = get_params_from_response_(login_status, "online_ip");

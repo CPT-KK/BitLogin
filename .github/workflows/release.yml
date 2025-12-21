@@ -18,7 +18,7 @@ jobs:
           - os: windows-latest
             target_arch: ""
             artifact_name: BitLogin-windows-x64    
-            final_executable_name: "BitLogin"
+            final_executable_name: BitLogin
             docker_image: ""
             install-cmd: echo "No dependencies to install on Windows."
             cc: cl
@@ -30,8 +30,8 @@ jobs:
           - os: ubuntu-latest
             target_arch: amd64 
             artifact_name: BitLogin-linux-x64
-            final_executable_name: "BitLogin"
-            docker_image: ubuntu:18.04
+            final_executable_name: BitLogin
+            docker_image: ubuntu:20.04
             install-cmd: |
                 apt-get update
                 apt-get install -y libssl-dev libfmt-dev cmake gcc g++
@@ -44,64 +44,56 @@ jobs:
           - os: macos-14
             target_arch: ""
             artifact_name: BitLogin-macos-universal
-            final_executable_name: "BitLogin"
+            final_executable_name: BitLogin
             docker_image: ""
             install-cmd: brew install fmt openssl
             cc: gcc
             cxx: g++ 
             artifact_suffix: ""
-            cmake_arch_flags: "-DCMAKE_OSX_ARCHITECTURES='x86_64;arm64'"
+            cmake_arch_flags: -DCMAKE_OSX_ARCHITECTURES='x86_64;arm64'
             build_path_prefix: ""
 
-          # ===== arm64 (glibc 2.27 via ubuntu:18.04) =====
+          # ===== arm64 (glibc 2.27 via ubuntu:20.04) =====
           - os: ubuntu-latest
             target_arch: aarch64
             artifact_name: BitLogin-linux-aarch64
             final_executable_name: BitLogin
-            docker_image: ubuntu:18.04
+            docker_image: ubuntu:20.04
             install-cmd: |
-                set -eux
-                export DEBIAN_FRONTEND=noninteractive
-                dpkg --print-architecture
                 dpkg --add-architecture arm64
                 sed -i 's|^deb |deb [arch=amd64] |' /etc/apt/sources.list
-                CODENAME=$(lsb_release -cs)
-                echo "deb [arch=arm64] http://ports.ubuntu.com/ubuntu-ports ${CODENAME} main restricted universe multiverse" | tee /etc/apt/sources.list.d/arm64.list
-                echo "deb [arch=arm64] http://ports.ubuntu.com/ubuntu-ports ${CODENAME}-updates main restricted universe multiverse" | tee -a /etc/apt/sources.list.d/arm64.list
-                echo "deb [arch=arm64] http://ports.ubuntu.com/ubuntu-ports ${CODENAME}-security main restricted universe multiverse" | tee -a /etc/apt/sources.list.d/arm64.list
+                echo "deb [arch=arm64] http://ports.ubuntu.com/ubuntu-ports \$(lsb_release -cs) main restricted universe multiverse" | tee /etc/apt/sources.list.d/arm64.list
+                echo "deb [arch=arm64] http://ports.ubuntu.com/ubuntu-ports \$(lsb_release -cs)-updates main restricted universe multiverse" | tee -a /etc/apt/sources.list.d/arm64.list
+                echo "deb [arch=arm64] http://ports.ubuntu.com/ubuntu-ports \$(lsb_release -cs)-security main restricted universe multiverse" | tee -a /etc/apt/sources.list.d/arm64.list
                 apt-get update
                 apt-get install -y gcc-aarch64-linux-gnu g++-aarch64-linux-gnu libc6-dev-arm64-cross libssl-dev:arm64 cmake
             cc: aarch64-linux-gnu-gcc
             cxx: aarch64-linux-gnu-g++
             artifact_suffix: ""
-            cmake_arch_flags: "-DCMAKE_SYSTEM_NAME=Linux -DCMAKE_SYSTEM_PROCESSOR=aarch64"
+            cmake_arch_flags: -DCMAKE_SYSTEM_NAME=Linux -DCMAKE_SYSTEM_PROCESSOR=aarch64
             build_path_prefix: ""
-            cmake_cross_compile_flags: "-DCMAKE_C_COMPILER=aarch64-linux-gnu-gcc -DCMAKE_CXX_COMPILER=aarch64-linux-gnu-g++ -DCMAKE_FIND_ROOT_PATH_MODE_PROGRAM=NEVER -DCMAKE_FIND_ROOT_PATH_MODE_LIBRARY=ONLY -DCMAKE_FIND_ROOT_PATH_MODE_INCLUDE=ONLY -DCMAKE_FIND_ROOT_PATH_MODE_PACKAGE=ONLY"
+            cmake_cross_compile_flags: -DCMAKE_C_COMPILER=aarch64-linux-gnu-gcc -DCMAKE_CXX_COMPILER=aarch64-linux-gnu-g++ -DCMAKE_FIND_ROOT_PATH_MODE_PROGRAM=NEVER -DCMAKE_FIND_ROOT_PATH_MODE_LIBRARY=ONLY -DCMAKE_FIND_ROOT_PATH_MODE_INCLUDE=ONLY -DCMAKE_FIND_ROOT_PATH_MODE_PACKAGE=ONLY
 
-          # ===== armv7 (glibc 2.27 via ubuntu:18.04) =====
+          # ===== armv7 (glibc 2.27 via ubuntu:20.04) =====
           - os: ubuntu-latest
             target_arch: armv7
             artifact_name: BitLogin-linux-armv7
             final_executable_name: BitLogin
-            docker_image: ubuntu:18.04
+            docker_image: ubuntu:20.04
             install-cmd: |
-                set -eux
-                export DEBIAN_FRONTEND=noninteractive
-                dpkg --print-architecture
                 dpkg --add-architecture armhf
                 sed -i 's|^deb |deb [arch=amd64] |' /etc/apt/sources.list
-                CODENAME=$(lsb_release -cs)
-                echo "deb [arch=armhf] http://ports.ubuntu.com/ubuntu-ports ${CODENAME} main restricted universe multiverse" | tee /etc/apt/sources.list.d/armhf.list
-                echo "deb [arch=armhf] http://ports.ubuntu.com/ubuntu-ports ${CODENAME}-updates main restricted universe multiverse" | tee -a /etc/apt/sources.list.d/armhf.list
-                echo "deb [arch=armhf] http://ports.ubuntu.com/ubuntu-ports ${CODENAME}-security main restricted universe multiverse" | tee -a /etc/apt/sources.list.d/armhf.list
+                echo "deb [arch=armhf] http://ports.ubuntu.com/ubuntu-ports \$(lsb_release -cs) main restricted universe multiverse" | tee /etc/apt/sources.list.d/armhf.list
+                echo "deb [arch=armhf] http://ports.ubuntu.com/ubuntu-ports \$(lsb_release -cs)-updates main restricted universe multiverse" | tee -a /etc/apt/sources.list.d/armhf.list
+                echo "deb [arch=armhf] http://ports.ubuntu.com/ubuntu-ports \$(lsb_release -cs)-security main restricted universe multiverse" | tee -a /etc/apt/sources.list.d/armhf.list
                 apt-get update
                 apt-get install -y gcc-arm-linux-gnueabihf g++-arm-linux-gnueabihf libc6-dev-armhf-cross libssl-dev:armhf cmake
             cc: arm-linux-gnueabihf-gcc
             cxx: arm-linux-gnueabihf-g++
             artifact_suffix: ""
-            cmake_arch_flags: "-DCMAKE_SYSTEM_NAME=Linux -DCMAKE_SYSTEM_PROCESSOR=arm"
+            cmake_arch_flags: -DCMAKE_SYSTEM_NAME=Linux -DCMAKE_SYSTEM_PROCESSOR=arm
             build_path_prefix: ""
-            cmake_cross_compile_flags: "-DCMAKE_C_COMPILER=arm-linux-gnueabihf-gcc -DCMAKE_CXX_COMPILER=arm-linux-gnueabihf-g++ -DCMAKE_FIND_ROOT_PATH_MODE_PROGRAM=NEVER -DCMAKE_FIND_ROOT_PATH_MODE_LIBRARY=ONLY -DCMAKE_FIND_ROOT_PATH_MODE_INCLUDE=ONLY -DCMAKE_FIND_ROOT_PATH_MODE_PACKAGE=ONLY"
+            cmake_cross_compile_flags: -DCMAKE_C_COMPILER=arm-linux-gnueabihf-gcc -DCMAKE_CXX_COMPILER=arm-linux-gnueabihf-g++ -DCMAKE_FIND_ROOT_PATH_MODE_PROGRAM=NEVER -DCMAKE_FIND_ROOT_PATH_MODE_LIBRARY=ONLY -DCMAKE_FIND_ROOT_PATH_MODE_INCLUDE=ONLY -DCMAKE_FIND_ROOT_PATH_MODE_PACKAGE=ONLY
 
     steps:
       - uses: actions/checkout@v4
@@ -130,14 +122,16 @@ jobs:
       - name: Build Linux (glibc 2.27 via Ubuntu 18.04)
         if: matrix.target_arch != ''
         run: |
-            mkdir build
-            echo "${{ matrix.install-cmd }}" > pre_install.sh
+            cat ${{ matrix.install-cmd }} > pre_install.sh
+            EOF
+
             chmod +x pre_install.sh
 
             docker run -d -it --name builder -v ${{ github.workspace }}:/tmp/github_workspace ${{ matrix.docker_image }}
+            docker exec builder bash -c "apt update && apt-get install -y lsb-release"
             docker exec builder bash /tmp/github_workspace/pre_install.sh
             
-            docker exec builder bash -c "cd /tmp/github_workspace/build && cmake -B build .. \
+            docker exec builder bash -c "cd /tmp/github_workspace && cmake -B build \
             -DCMAKE_C_COMPILER=${{ matrix.cc }} \
             -DCMAKE_CXX_COMPILER=${{ matrix.cxx }} \
             -DCMAKE_BUILD_TYPE=Release \

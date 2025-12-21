@@ -122,7 +122,8 @@ jobs:
       - name: Build Linux (glibc 2.27 via Ubuntu 18.04)
         if: matrix.target_arch != ''
         run: |
-            cat ${{ matrix.install-cmd }} > pre_install.sh
+            cat << EOF > pre_install.sh
+            ${{ matrix.install-cmd }}
             EOF
 
             chmod +x pre_install.sh

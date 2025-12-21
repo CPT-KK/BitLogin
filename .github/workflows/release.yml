@@ -130,13 +130,14 @@ jobs:
       - name: Build Linux (glibc 2.27 via Ubuntu 18.04)
         if: matrix.target_arch != ''
         run: |
+            mkdir build
             echo "${{ matrix.install-cmd }}" > pre_install.sh
             chmod +x pre_install.sh
 
             docker run -d -it --name builder -v ${{ github.workspace }}:/tmp/github_workspace ${{ matrix.docker_image }}
             docker exec builder bash /tmp/github_workspace/pre_install.sh
             
-            docker exec builder bash -c "cd /tmp/github_workspace && cmake -B build \
+            docker exec builder bash -c "cd /tmp/github_workspace/build && cmake -B build .. \
             -DCMAKE_C_COMPILER=${{ matrix.cc }} \
             -DCMAKE_CXX_COMPILER=${{ matrix.cxx }} \
             -DCMAKE_BUILD_TYPE=Release \

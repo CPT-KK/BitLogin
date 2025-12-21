@@ -34,7 +34,7 @@ jobs:
             docker_image: ubuntu:18.04
             install-cmd: |
                 apt-get update
-                apt-get install -y libssl-dev libfmt-dev cmake
+                apt-get install -y libssl-dev libfmt-dev cmake gcc g++
             cc: gcc
             cxx: g++    
             artifact_suffix: ""
@@ -133,7 +133,9 @@ jobs:
             echo "${{ matrix.install-cmd }}" > pre_install.sh
             chmod +x pre_install.sh
 
-            docker run -d --name builder -v ${{ github.workspace }}:/tmp/github_workspace  ${{ matrix.docker_image }}
+            docker pull ${{ matrix.docker_image }}
+            docker start ${{ matrix.docker_image }}
+            docker run -d -it -v ${{ github.workspace }}:/tmp/github_workspace ${{ matrix.docker_image }}
             docker exec builder bash /tmp/github_workspace/pre_install.sh
             
             docker exec builder bash -c "cd /tmp/github_workspace && cmake -B build \

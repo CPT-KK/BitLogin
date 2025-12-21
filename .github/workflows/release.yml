@@ -74,8 +74,9 @@ jobs:
             cc: aarch64-linux-gnu-gcc
             cxx: aarch64-linux-gnu-g++
             artifact_suffix: ""
-            cmake_arch_flags: ""
+            cmake_arch_flags: "-DCMAKE_SYSTEM_NAME=Linux -DCMAKE_SYSTEM_PROCESSOR=aarch64"
             build_path_prefix: ""
+            cmake_cross_compile_flags: "-DCMAKE_C_COMPILER=aarch64-linux-gnu-gcc -DCMAKE_CXX_COMPILER=aarch64-linux-gnu-g++ -DCMAKE_FIND_ROOT_PATH_MODE_PROGRAM=NEVER -DCMAKE_FIND_ROOT_PATH_MODE_LIBRARY=ONLY -DCMAKE_FIND_ROOT_PATH_MODE_INCLUDE=ONLY -DCMAKE_FIND_ROOT_PATH_MODE_PACKAGE=ONLY"
 
           # ===== armv7 (glibc 2.27 via ubuntu:18.04) =====
           - os: ubuntu-latest
@@ -98,8 +99,9 @@ jobs:
             cc: arm-linux-gnueabihf-gcc
             cxx: arm-linux-gnueabihf-g++
             artifact_suffix: ""
-            cmake_arch_flags: ""
+            cmake_arch_flags: "-DCMAKE_SYSTEM_NAME=Linux -DCMAKE_SYSTEM_PROCESSOR=arm"
             build_path_prefix: ""
+            cmake_cross_compile_flags: "-DCMAKE_C_COMPILER=arm-linux-gnueabihf-gcc -DCMAKE_CXX_COMPILER=arm-linux-gnueabihf-g++ -DCMAKE_FIND_ROOT_PATH_MODE_PROGRAM=NEVER -DCMAKE_FIND_ROOT_PATH_MODE_LIBRARY=ONLY -DCMAKE_FIND_ROOT_PATH_MODE_INCLUDE=ONLY -DCMAKE_FIND_ROOT_PATH_MODE_PACKAGE=ONLY"
 
     steps:
       - uses: actions/checkout@v4
@@ -135,16 +137,13 @@ jobs:
             docker exec builder /tmp/github_workspace/pre_install.sh
             
             docker exec builder cd /tmp/github_workspace && cmake -B build \
-            -DCMAKE_SYSTEM_NAME=Linux \
-            -DCMAKE_SYSTEM_PROCESSOR=$(
-                [ '${{ matrix.target_arch }}' = 'amd64' ] && echo x86_64 ||
-                [ '${{ matrix.target_arch }}' = 'armv7' ] && echo arm ||
-                echo aarch64
-            ) \
             -DCMAKE_C_COMPILER=${{ matrix.cc }} \
             -DCMAKE_CXX_COMPILER=${{ matrix.cxx }} \
             -DCMAKE_BUILD_TYPE=Release \
-            -DBUILD_SHARED_LIBS=OFF \
+            -DCMAKE_POSITION_INDEPENDENT_CODE=TRUE \
+            ${{ matrix.cmake_arch_flags }} \
+            ${{ matrix.cmake_cross_compile_flags }} \
+            -S /tmp/github_workspace \
             -DCMAKE_EXE_LINKER_FLAGS='-static-libgcc -static-libstdc++'
 
             docker exec builder cd /tmp/github_workspace && cmake --build /tmp/github_workspace/build --config Release

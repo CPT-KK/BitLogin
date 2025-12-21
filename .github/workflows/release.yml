@@ -16,127 +16,127 @@ jobs:
       matrix:
         include:
           - os: windows-latest
-            c_compiler: cl
-            cpp_compiler: cl
+            target_arch: ""
+            artifact_name: BitLogin-windows-x64    
+            final_executable_name: "BitLogin"
+            docker_image: ""
             install-cmd: echo "No dependencies to install on Windows."
-            build_path_prefix: Release/
-            artifact_name: BitLogin-windows-x64
+            cc: cl
+            cxx: cl
             artifact_suffix: .exe
-            final_executable_name: "BitLogin"
+            cmake_arch_flags: ""
+
           - os: ubuntu-latest
-            c_compiler: gcc
-            cpp_compiler: g++
-            install-cmd: sudo apt-get update && sudo apt-get install -y libssl-dev libfmt-dev
-            build_path_prefix: ""
+            target_arch: amd64 
             artifact_name: BitLogin-linux-x64
-            artifact_suffix: ""
-            compile_flags: "-static-libgcc -static-libstdc++"
             final_executable_name: "BitLogin"
+            docker_image: ubuntu:18.04
+            install-cmd: ""
+            cc: gcc
+            cxx: g++    
+            artifact_suffix: ""
+            cmake_arch_flags: ""
+
           - os: macos-14
-            c_compiler: gcc
-            cpp_compiler: g++
-            install-cmd: brew install fmt openssl
-            build_path_prefix: ""
+            target_arch: ""
             artifact_name: BitLogin-macos-universal
+            final_executable_name: "BitLogin"
+            docker_image: ""
+            install-cmd: brew install fmt openssl
+            cc: gcc
+            cxx: g++ 
             artifact_suffix: ""
             cmake_arch_flags: "-DCMAKE_OSX_ARCHITECTURES='x86_64;arm64'"
-            final_executable_name: "BitLogin"
-          - os: ubuntu-22.04
+
+          # ===== arm64 (glibc 2.27 via ubuntu:18.04) =====
+          - os: ubuntu-latest
             target_arch: aarch64
-            c_compiler: aarch64-linux-gnu-gcc
-            cpp_compiler: aarch64-linux-gnu-g++
-            install-cmd: |
-                set -eux
-                export DEBIAN_FRONTEND=noninteractive
-                dpkg --print-architecture
-                sudo dpkg --add-architecture arm64
-                sudo sed -i 's|^deb |deb [arch=amd64] |' /etc/apt/sources.list
-                CODENAME=$(lsb_release -cs)
-                echo "deb [arch=arm64] http://ports.ubuntu.com/ubuntu-ports ${CODENAME} main restricted universe multiverse" | sudo tee /etc/apt/sources.list.d/arm64.list
-                echo "deb [arch=arm64] http://ports.ubuntu.com/ubuntu-ports ${CODENAME}-updates main restricted universe multiverse" | sudo tee -a /etc/apt/sources.list.d/arm64.list
-                echo "deb [arch=arm64] http://ports.ubuntu.com/ubuntu-ports ${CODENAME}-security main restricted universe multiverse" | sudo tee -a /etc/apt/sources.list.d/arm64.list
-                sudo apt-get clean
-                sudo apt-get update
-                sudo apt-get install -y gcc-aarch64-linux-gnu g++-aarch64-linux-gnu libc6-dev-arm64-cross libssl-dev:arm64
-            build_path_prefix: ""
             artifact_name: BitLogin-linux-aarch64
+            final_executable_name: BitLogin
+            docker_image: ubuntu:18.04
+            install-cmd: ""
+            cc: aarch64-linux-gnu-gcc
+            cxx: aarch64-linux-gnu-g++
             artifact_suffix: ""
-            cmake_arch_flags: "-DCMAKE_SYSTEM_NAME=Linux -DCMAKE_SYSTEM_PROCESSOR=aarch64"
-            cmake_cross_compile_flags: "-DCMAKE_C_COMPILER=aarch64-linux-gnu-gcc -DCMAKE_CXX_COMPILER=aarch64-linux-gnu-g++ -DCMAKE_FIND_ROOT_PATH_MODE_PROGRAM=NEVER -DCMAKE_FIND_ROOT_PATH_MODE_LIBRARY=ONLY -DCMAKE_FIND_ROOT_PATH_MODE_INCLUDE=ONLY -DCMAKE_FIND_ROOT_PATH_MODE_PACKAGE=ONLY"
-            final_executable_name: "BitLogin"
-          - os: ubuntu-22.04
+            cmake_arch_flags: ""
+
+          # ===== armv7 (glibc 2.27 via ubuntu:18.04) =====
+          - os: ubuntu-latest
             target_arch: armv7
-            c_compiler: arm-linux-gnueabihf-gcc
-            cpp_compiler: arm-linux-gnueabihf-g++
-            install-cmd: |
-                set -eux
-                export DEBIAN_FRONTEND=noninteractive
-                dpkg --print-architecture
-                sudo dpkg --add-architecture armhf
-                sudo sed -i 's|^deb |deb [arch=amd64] |' /etc/apt/sources.list
-                CODENAME=$(lsb_release -cs)
-                echo "deb [arch=armhf] http://ports.ubuntu.com/ubuntu-ports ${CODENAME} main restricted universe multiverse" | sudo tee /etc/apt/sources.list.d/armhf.list
-                echo "deb [arch=armhf] http://ports.ubuntu.com/ubuntu-ports ${CODENAME}-updates main restricted universe multiverse" | sudo tee -a /etc/apt/sources.list.d/armhf.list
-                echo "deb [arch=armhf] http://ports.ubuntu.com/ubuntu-ports ${CODENAME}-security main restricted universe multiverse" | sudo tee -a /etc/apt/sources.list.d/armhf.list
-                sudo apt-get clean
-                sudo apt-get update
-                sudo apt-get install -y gcc-arm-linux-gnueabihf g++-arm-linux-gnueabihf libc6-dev-armhf-cross libssl-dev:armhf
-            build_path_prefix: ""
             artifact_name: BitLogin-linux-armv7
+            final_executable_name: BitLogin
+            docker_image: ubuntu:18.04
+            install-cmd: ""
+            cc: arm-linux-gnueabihf-gcc
+            cxx: arm-linux-gnueabihf-g++
             artifact_suffix: ""
-            cmake_arch_flags: "-DCMAKE_SYSTEM_NAME=Linux -DCMAKE_SYSTEM_PROCESSOR=arm"
-            cmake_cross_compile_flags: "-DCMAKE_C_COMPILER=arm-linux-gnueabihf-gcc -DCMAKE_CXX_COMPILER=arm-linux-gnueabihf-g++ -DCMAKE_FIND_ROOT_PATH_MODE_PROGRAM=NEVER -DCMAKE_FIND_ROOT_PATH_MODE_LIBRARY=ONLY -DCMAKE_FIND_ROOT_PATH_MODE_INCLUDE=ONLY -DCMAKE_FIND_ROOT_PATH_MODE_PACKAGE=ONLY"
-            final_executable_name: "BitLogin"
+            cmake_arch_flags: ""
 
     steps:
-    - uses: actions/checkout@v4
+      - uses: actions/checkout@v4
 
-    - name: Set up QEMU for ARM emulation (if needed)
-      if: matrix.target_arch != ''
-      uses: docker/setup-qemu-action@v3
-      with:
-        platforms: linux/arm64,linux/arm/v7
+      # ===== native builds (Windows / Linux x64 / macOS) =====
+      - name: Install dependencies (native)
+        if: matrix.target_arch == ''
+        run: ${{ matrix.install-cmd }}
 
-    - name: Set CMake version
-      uses: jwlawson/actions-setup-cmake@v2
-      with:
-        cmake-version: '3.29.0'
+      - name: CMake Configure (native)
+        if: matrix.target_arch == ''
+        run: >
+          cmake -B build
+          -DCMAKE_C_COMPILER=${{ matrix.cc }}
+          -DCMAKE_CXX_COMPILER=${{ matrix.cxx }}
+          -DCMAKE_BUILD_TYPE=Release
+          -DCMAKE_POSITION_INDEPENDENT_CODE=TRUE
+          ${{ matrix.cmake_arch_flags }}
+          -S .
 
-    - name: Install dependencies
-      run: ${{ matrix.install-cmd }}
+      - name: CMake Build (native)
+        if: matrix.target_arch == ''
+        run: cmake --build build --config Release
 
-    - name: CMake Configure
-      run: >
-        cmake -B ${{ github.workspace }}/build
-        -DCMAKE_CXX_COMPILER=${{ matrix.cpp_compiler }}
-        -DCMAKE_C_COMPILER=${{ matrix.c_compiler }}
-        -DCMAKE_BUILD_TYPE=Release
-        -DCMAKE_POSITION_INDEPENDENT_CODE=TRUE
-        ${{ matrix.cmake_arch_flags }}
-        ${{ matrix.cmake_cross_compile_flags }}
-        -DCMAKE_EXE_LINKER_FLAGS="${{ matrix.compile_flags }}"
-        -S ${{ github.workspace }}
+      # ===== Builds in Ubuntu 18.04 Docker (x64 / arm64 / armv7)=====
+      - name: Build Linux (glibc 2.27 via Ubuntu 18.04)
+        if: matrix.target_arch != ''
+        run: |
+            docker run --rm \
+            -v "$PWD:/work" \
+            -w /work \
+            ${{ matrix.docker_image }} \
+            bash -c "
+                set -eux
 
-    - name: CMake Build
-      run: cmake --build ${{ github.workspace }}/build --config Release
+                apt-get update
+                apt-get install -y build-essential cmake pkg-config ${{ matrix.cc }} ${{ matrix.cxx }} libssl-dev
 
-    - name: Set output name
-      id: strings
-      shell: bash
-      run: |
-        if [[ -n "${{ matrix.target_arch }}" ]]; then
-          echo "artifact_name_full=${{ matrix.artifact_name }}" >> "$GITHUB_OUTPUT"
-        else
-          artifact_name_raw=`cat build/execname`
-          echo "The artifact will be named ${artifact_name_raw}"
-          echo "artifact_name_full=${artifact_name_raw}" >> "$GITHUB_OUTPUT"
-        fi
+                if [ '${{ matrix.target_arch }}' != 'amd64' ]; then
+                dpkg --add-architecture $([[ '${{ matrix.target_arch }}' == 'armv7' ]] && echo armhf || echo arm64)
+                apt-get update
+                apt-get install -y \
+                    libc6-dev-$([[ '${{ matrix.target_arch }}' == 'armv7' ]] && echo armhf || echo arm64)-cross \
+                    libssl-dev:$([[ '${{ matrix.target_arch }}' == 'armv7' ]] && echo armhf || echo arm64)
+                fi
 
-    - name: Upload binaries to release
-      uses: svenstaro/upload-release-action@v2
-      with:
-        asset_name: ${{ matrix.artifact_name }}${{ matrix.artifact_suffix }}
-        file: ${{ github.workspace }}/build/${{ matrix.build_path_prefix }}${{ matrix.final_executable_name || matrix.artifact_name }}${{ matrix.artifact_suffix }}
-        tag: ${{ github.event.release.tag_name }}
-        overwrite: true
+                cmake -B build \
+                -DCMAKE_SYSTEM_NAME=Linux \
+                -DCMAKE_SYSTEM_PROCESSOR=$(
+                    [ '${{ matrix.target_arch }}' = 'amd64' ] && echo x86_64 ||
+                    [ '${{ matrix.target_arch }}' = 'armv7' ] && echo arm ||
+                    echo aarch64
+                ) \
+                -DCMAKE_C_COMPILER=${{ matrix.cc }} \
+                -DCMAKE_CXX_COMPILER=${{ matrix.cxx }} \
+                -DCMAKE_BUILD_TYPE=Release \
+                -DBUILD_SHARED_LIBS=OFF \
+                -DCMAKE_EXE_LINKER_FLAGS='-static-libgcc -static-libstdc++'
 
+                cmake --build build -- -j$(nproc)
+            "
+
+      - name: Upload binaries to release
+        uses: svenstaro/upload-release-action@v2
+        with:
+          asset_name: ${{ matrix.artifact_name }}${{ matrix.artifact_suffix }}
+          file: build/${{ matrix.final_executable_name }}${{ matrix.artifact_suffix }}
+          tag: ${{ github.event.release.tag_name }}
+          overwrite: true

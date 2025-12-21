@@ -133,8 +133,6 @@ jobs:
             echo "${{ matrix.install-cmd }}" > pre_install.sh
             chmod +x pre_install.sh
 
-            docker pull ${{ matrix.docker_image }}
-            docker start ${{ matrix.docker_image }}
             docker run -d -it -v ${{ github.workspace }}:/tmp/github_workspace ${{ matrix.docker_image }}
             docker exec builder bash /tmp/github_workspace/pre_install.sh
             

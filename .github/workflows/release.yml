@@ -34,7 +34,7 @@ jobs:
             docker_image: ubuntu:18.04
             install-cmd: |
                 apt-get update
-                apt-get install -y libssl-dev libfmt-dev
+                apt-get install -y libssl-dev libfmt-dev cmake
             cc: gcc
             cxx: g++    
             artifact_suffix: ""
@@ -70,7 +70,7 @@ jobs:
                 echo "deb [arch=arm64] http://ports.ubuntu.com/ubuntu-ports ${CODENAME}-updates main restricted universe multiverse" | sudo tee -a /etc/apt/sources.list.d/arm64.list
                 echo "deb [arch=arm64] http://ports.ubuntu.com/ubuntu-ports ${CODENAME}-security main restricted universe multiverse" | sudo tee -a /etc/apt/sources.list.d/arm64.list
                 apt-get update
-                apt-get install -y gcc-aarch64-linux-gnu g++-aarch64-linux-gnu libc6-dev-arm64-cross libssl-dev:arm64
+                apt-get install -y gcc-aarch64-linux-gnu g++-aarch64-linux-gnu libc6-dev-arm64-cross libssl-dev:arm64 cmake
             cc: aarch64-linux-gnu-gcc
             cxx: aarch64-linux-gnu-g++
             artifact_suffix: ""
@@ -95,7 +95,7 @@ jobs:
                 echo "deb [arch=armhf] http://ports.ubuntu.com/ubuntu-ports ${CODENAME}-updates main restricted universe multiverse" | sudo tee -a /etc/apt/sources.list.d/armhf.list
                 echo "deb [arch=armhf] http://ports.ubuntu.com/ubuntu-ports ${CODENAME}-security main restricted universe multiverse" | sudo tee -a /etc/apt/sources.list.d/armhf.list
                 apt-get update
-                apt-get install -y gcc-arm-linux-gnueabihf g++-arm-linux-gnueabihf libc6-dev-armhf-cross libssl-dev:armhf
+                apt-get install -y gcc-arm-linux-gnueabihf g++-arm-linux-gnueabihf libc6-dev-armhf-cross libssl-dev:armhf cmake
             cc: arm-linux-gnueabihf-gcc
             cxx: arm-linux-gnueabihf-g++
             artifact_suffix: ""
@@ -133,10 +133,10 @@ jobs:
             echo "${{ matrix.install-cmd }}" > pre_install.sh
             chmod +x pre_install.sh
 
-            docker run -d -it --name builder -v ${{ github.workspace }}:/tmp/github_workspace  ${{ matrix.docker_image }}
-            docker exec builder /tmp/github_workspace/pre_install.sh
+            docker run -d --name builder -v ${{ github.workspace }}:/tmp/github_workspace  ${{ matrix.docker_image }}
+            docker exec builder bash /tmp/github_workspace/pre_install.sh
             
-            docker exec builder cd /tmp/github_workspace && cmake -B build \
+            docker exec builder bash -c "cd /tmp/github_workspace && cmake -B build \
             -DCMAKE_C_COMPILER=${{ matrix.cc }} \
             -DCMAKE_CXX_COMPILER=${{ matrix.cxx }} \
             -DCMAKE_BUILD_TYPE=Release \
@@ -144,9 +144,9 @@ jobs:
             ${{ matrix.cmake_arch_flags }} \
             ${{ matrix.cmake_cross_compile_flags }} \
             -S /tmp/github_workspace \
-            -DCMAKE_EXE_LINKER_FLAGS='-static-libgcc -static-libstdc++'
+            -DCMAKE_EXE_LINKER_FLAGS='-static-libgcc -static-libstdc++'"
 
-            docker exec builder cd /tmp/github_workspace && cmake --build /tmp/github_workspace/build --config Release
+            docker exec builder bash -c "cd /tmp/github_workspace && cmake --build /tmp/github_workspace/build --config Release"
        
       - name: Upload binaries to release
         uses: svenstaro/upload-release-action@v2

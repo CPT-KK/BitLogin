@@ -25,17 +25,21 @@ jobs:
             cxx: cl
             artifact_suffix: .exe
             cmake_arch_flags: ""
+            build_path_prefix: Release/
 
           - os: ubuntu-latest
             target_arch: amd64 
             artifact_name: BitLogin-linux-x64
             final_executable_name: "BitLogin"
             docker_image: ubuntu:18.04
-            install-cmd: ""
+            install-cmd: |
+                apt-get update
+                apt-get install -y libssl-dev libfmt-dev
             cc: gcc
             cxx: g++    
             artifact_suffix: ""
             cmake_arch_flags: ""
+            build_path_prefix: ""
 
           - os: macos-14
             target_arch: ""
@@ -47,6 +51,7 @@ jobs:
             cxx: g++ 
             artifact_suffix: ""
             cmake_arch_flags: "-DCMAKE_OSX_ARCHITECTURES='x86_64;arm64'"
+            build_path_prefix: ""
 
           # ===== arm64 (glibc 2.27 via ubuntu:18.04) =====
           - os: ubuntu-latest
@@ -54,11 +59,23 @@ jobs:
             artifact_name: BitLogin-linux-aarch64
             final_executable_name: BitLogin
             docker_image: ubuntu:18.04
-            install-cmd: ""
+            install-cmd: |
+                set -eux
+                export DEBIAN_FRONTEND=noninteractive
+                dpkg --print-architecture
+                dpkg --add-architecture arm64
+                sed -i 's|^deb |deb [arch=amd64] |' /etc/apt/sources.list
+                CODENAME=$(lsb_release -cs)
+                echo "deb [arch=arm64] http://ports.ubuntu.com/ubuntu-ports ${CODENAME} main restricted universe multiverse" | sudo tee /etc/apt/sources.list.d/arm64.list
+                echo "deb [arch=arm64] http://ports.ubuntu.com/ubuntu-ports ${CODENAME}-updates main restricted universe multiverse" | sudo tee -a /etc/apt/sources.list.d/arm64.list
+                echo "deb [arch=arm64] http://ports.ubuntu.com/ubuntu-ports ${CODENAME}-security main restricted universe multiverse" | sudo tee -a /etc/apt/sources.list.d/arm64.list
+                apt-get update
+                apt-get install -y gcc-aarch64-linux-gnu g++-aarch64-linux-gnu libc6-dev-arm64-cross libssl-dev:arm64
             cc: aarch64-linux-gnu-gcc
             cxx: aarch64-linux-gnu-g++
             artifact_suffix: ""
             cmake_arch_flags: ""
+            build_path_prefix: ""
 
           # ===== armv7 (glibc 2.27 via ubuntu:18.04) =====
           - os: ubuntu-latest
@@ -66,11 +83,23 @@ jobs:
             artifact_name: BitLogin-linux-armv7
             final_executable_name: BitLogin
             docker_image: ubuntu:18.04
-            install-cmd: ""
+            install-cmd: |
+                set -eux
+                export DEBIAN_FRONTEND=noninteractive
+                dpkg --print-architecture
+                dpkg --add-architecture armhf
+                sed -i 's|^deb |deb [arch=amd64] |' /etc/apt/sources.list
+                CODENAME=$(lsb_release -cs)
+                echo "deb [arch=armhf] http://ports.ubuntu.com/ubuntu-ports ${CODENAME} main restricted universe multiverse" | sudo tee /etc/apt/sources.list.d/armhf.list
+                echo "deb [arch=armhf] http://ports.ubuntu.com/ubuntu-ports ${CODENAME}-updates main restricted universe multiverse" | sudo tee -a /etc/apt/sources.list.d/armhf.list
+                echo "deb [arch=armhf] http://ports.ubuntu.com/ubuntu-ports ${CODENAME}-security main restricted universe multiverse" | sudo tee -a /etc/apt/sources.list.d/armhf.list
+                apt-get update
+                apt-get install -y gcc-arm-linux-gnueabihf g++-arm-linux-gnueabihf libc6-dev-armhf-cross libssl-dev:armhf
             cc: arm-linux-gnueabihf-gcc
             cxx: arm-linux-gnueabihf-g++
             artifact_suffix: ""
             cmake_arch_flags: ""
+            build_path_prefix: ""
 
     steps:
       - uses: actions/checkout@v4
@@ -83,60 +112,47 @@ jobs:
       - name: CMake Configure (native)
         if: matrix.target_arch == ''
         run: >
-          cmake -B build
+          cmake -B ${{ github.workspace }}/build
           -DCMAKE_C_COMPILER=${{ matrix.cc }}
           -DCMAKE_CXX_COMPILER=${{ matrix.cxx }}
           -DCMAKE_BUILD_TYPE=Release
           -DCMAKE_POSITION_INDEPENDENT_CODE=TRUE
           ${{ matrix.cmake_arch_flags }}
-          -S .
+          -S ${{ github.workspace }}
 
       - name: CMake Build (native)
         if: matrix.target_arch == ''
-        run: cmake --build build --config Release
+        run: cmake --build ${{ github.workspace }}/build --config Release
 
       # ===== Builds in Ubuntu 18.04 Docker (x64 / arm64 / armv7)=====
       - name: Build Linux (glibc 2.27 via Ubuntu 18.04)
         if: matrix.target_arch != ''
         run: |
-            docker run --rm \
-            -v "$PWD:/work" \
-            -w /work \
-            ${{ matrix.docker_image }} \
-            bash -c "
-                set -eux
+            echo "${{ matrix.install-cmd }}" > pre_install.sh
+            chmod +x pre_install.sh
 
-                apt-get update
-                apt-get install -y build-essential cmake pkg-config ${{ matrix.cc }} ${{ matrix.cxx }} libssl-dev
+            docker run -d -it --name builder -v ${{ github.workspace }}:/tmp/github_workspace  ${{ matrix.docker_image }}
+            docker exec builder /tmp/github_workspace/pre_install.sh
+            
+            docker exec builder cd /tmp/github_workspace && cmake -B build \
+            -DCMAKE_SYSTEM_NAME=Linux \
+            -DCMAKE_SYSTEM_PROCESSOR=$(
+                [ '${{ matrix.target_arch }}' = 'amd64' ] && echo x86_64 ||
+                [ '${{ matrix.target_arch }}' = 'armv7' ] && echo arm ||
+                echo aarch64
+            ) \
+            -DCMAKE_C_COMPILER=${{ matrix.cc }} \
+            -DCMAKE_CXX_COMPILER=${{ matrix.cxx }} \
+            -DCMAKE_BUILD_TYPE=Release \
+            -DBUILD_SHARED_LIBS=OFF \
+            -DCMAKE_EXE_LINKER_FLAGS='-static-libgcc -static-libstdc++'
 
-                if [ '${{ matrix.target_arch }}' != 'amd64' ]; then
-                dpkg --add-architecture $([[ '${{ matrix.target_arch }}' == 'armv7' ]] && echo armhf || echo arm64)
-                apt-get update
-                apt-get install -y \
-                    libc6-dev-$([[ '${{ matrix.target_arch }}' == 'armv7' ]] && echo armhf || echo arm64)-cross \
-                    libssl-dev:$([[ '${{ matrix.target_arch }}' == 'armv7' ]] && echo armhf || echo arm64)
-                fi
-
-                cmake -B build \
-                -DCMAKE_SYSTEM_NAME=Linux \
-                -DCMAKE_SYSTEM_PROCESSOR=$(
-                    [ '${{ matrix.target_arch }}' = 'amd64' ] && echo x86_64 ||
-                    [ '${{ matrix.target_arch }}' = 'armv7' ] && echo arm ||
-                    echo aarch64
-                ) \
-                -DCMAKE_C_COMPILER=${{ matrix.cc }} \
-                -DCMAKE_CXX_COMPILER=${{ matrix.cxx }} \
-                -DCMAKE_BUILD_TYPE=Release \
-                -DBUILD_SHARED_LIBS=OFF \
-                -DCMAKE_EXE_LINKER_FLAGS='-static-libgcc -static-libstdc++'
-
-                cmake --build build -- -j$(nproc)
-            "
-
+            docker exec builder cd /tmp/github_workspace && cmake --build /tmp/github_workspace/build --config Release
+       
       - name: Upload binaries to release
         uses: svenstaro/upload-release-action@v2
         with:
           asset_name: ${{ matrix.artifact_name }}${{ matrix.artifact_suffix }}
-          file: build/${{ matrix.final_executable_name }}${{ matrix.artifact_suffix }}
+          file: build/${{ matrix.build_path_prefix }}${{ matrix.final_executable_name }}${{ matrix.artifact_suffix }}
           tag: ${{ github.event.release.tag_name }}
           overwrite: true

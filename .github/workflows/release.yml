@@ -66,9 +66,9 @@ jobs:
                 dpkg --add-architecture arm64
                 sed -i 's|^deb |deb [arch=amd64] |' /etc/apt/sources.list
                 CODENAME=$(lsb_release -cs)
-                echo "deb [arch=arm64] http://ports.ubuntu.com/ubuntu-ports ${CODENAME} main restricted universe multiverse" | sudo tee /etc/apt/sources.list.d/arm64.list
-                echo "deb [arch=arm64] http://ports.ubuntu.com/ubuntu-ports ${CODENAME}-updates main restricted universe multiverse" | sudo tee -a /etc/apt/sources.list.d/arm64.list
-                echo "deb [arch=arm64] http://ports.ubuntu.com/ubuntu-ports ${CODENAME}-security main restricted universe multiverse" | sudo tee -a /etc/apt/sources.list.d/arm64.list
+                echo "deb [arch=arm64] http://ports.ubuntu.com/ubuntu-ports ${CODENAME} main restricted universe multiverse" | tee /etc/apt/sources.list.d/arm64.list
+                echo "deb [arch=arm64] http://ports.ubuntu.com/ubuntu-ports ${CODENAME}-updates main restricted universe multiverse" | tee -a /etc/apt/sources.list.d/arm64.list
+                echo "deb [arch=arm64] http://ports.ubuntu.com/ubuntu-ports ${CODENAME}-security main restricted universe multiverse" | tee -a /etc/apt/sources.list.d/arm64.list
                 apt-get update
                 apt-get install -y gcc-aarch64-linux-gnu g++-aarch64-linux-gnu libc6-dev-arm64-cross libssl-dev:arm64 cmake
             cc: aarch64-linux-gnu-gcc
@@ -91,9 +91,9 @@ jobs:
                 dpkg --add-architecture armhf
                 sed -i 's|^deb |deb [arch=amd64] |' /etc/apt/sources.list
                 CODENAME=$(lsb_release -cs)
-                echo "deb [arch=armhf] http://ports.ubuntu.com/ubuntu-ports ${CODENAME} main restricted universe multiverse" | sudo tee /etc/apt/sources.list.d/armhf.list
-                echo "deb [arch=armhf] http://ports.ubuntu.com/ubuntu-ports ${CODENAME}-updates main restricted universe multiverse" | sudo tee -a /etc/apt/sources.list.d/armhf.list
-                echo "deb [arch=armhf] http://ports.ubuntu.com/ubuntu-ports ${CODENAME}-security main restricted universe multiverse" | sudo tee -a /etc/apt/sources.list.d/armhf.list
+                echo "deb [arch=armhf] http://ports.ubuntu.com/ubuntu-ports ${CODENAME} main restricted universe multiverse" | tee /etc/apt/sources.list.d/armhf.list
+                echo "deb [arch=armhf] http://ports.ubuntu.com/ubuntu-ports ${CODENAME}-updates main restricted universe multiverse" | tee -a /etc/apt/sources.list.d/armhf.list
+                echo "deb [arch=armhf] http://ports.ubuntu.com/ubuntu-ports ${CODENAME}-security main restricted universe multiverse" | tee -a /etc/apt/sources.list.d/armhf.list
                 apt-get update
                 apt-get install -y gcc-arm-linux-gnueabihf g++-arm-linux-gnueabihf libc6-dev-armhf-cross libssl-dev:armhf cmake
             cc: arm-linux-gnueabihf-gcc

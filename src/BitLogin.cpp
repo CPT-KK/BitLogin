@@ -36,11 +36,6 @@ int main(int argc, char *argv[]) {
     // Cleaning
     secure_clear_string(username);
     secure_clear_string(password);
-    for (size_t i = 3; i > 0; i--) {
-        printf("Program will exit in %zd seconds...\r", i);
-        std::this_thread::sleep_for(std::chrono::seconds(1));
-    }
-
-    printf("\n");
+    printf("Exiting...\n");
     return ret; 
 }

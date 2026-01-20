@@ -12,23 +12,12 @@ BitSrunUser::BitSrunUser(const std::string &username, const std::string &passwor
     client_srun_ptr_->set_read_timeout(5, 0);
     client_srun_ptr_->set_write_timeout(5, 0);
 
-    client_valid_ptr_ = std::make_shared<httplib::Client>("http://10.0.6.92"); // www.bit.edu.cn -> 10.0.6.92
-    client_valid_ptr_->set_follow_location(true);
-    client_valid_ptr_->set_connection_timeout(5, 0);
-    client_valid_ptr_->set_read_timeout(5, 0);
-    client_valid_ptr_->set_write_timeout(5, 0);
-
+    // initial request to get ac_id
     auto res_srun = client_srun_ptr_->Get("/");
-    auto res_valid = client_valid_ptr_->Get("/");
     check_response_valid_(res_srun, "HTTP error: " + httplib::to_string(res_srun.error()));
-    check_response_valid_(res_valid, "HTTP error: " + httplib::to_string(res_valid.error()));
 
     // get ac_id
-    if (get_params_from_url_(res_valid->location, "ac_id") != "") {
-        ac_id_ = get_params_from_url_(res_valid->location, "ac_id");
-    } else {
-        ac_id_ = get_params_from_url_(res_srun->location, "ac_id");
-    }
+    ac_id_ = get_params_from_url_(res_srun->location, "ac_id");
 
     // Check if ac_id was successfully obtained
     if (ac_id_.empty()) {

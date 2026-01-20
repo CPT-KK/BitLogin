@@ -29,7 +29,6 @@ public:
 
 private:
     std::shared_ptr<httplib::Client> client_srun_ptr_;
-    std::shared_ptr<httplib::Client> client_valid_ptr_;
 
     std::string username_;
     std::string password_;

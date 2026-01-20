@@ -7,7 +7,7 @@ if(MSVC)
     add_compile_options("$<$<CXX_COMPILER_ID:MSVC>:/source-charset:utf-8>")
 endif()
 
-project(BitLogin VERSION 0.12.0)
+project(BitLogin VERSION 0.13.0)
 
 configure_file(
     "${CMAKE_CURRENT_SOURCE_DIR}/cmake/project.h.in"

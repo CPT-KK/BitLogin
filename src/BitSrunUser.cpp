@@ -4,6 +4,7 @@
 static std::string translate_error(const std::string& code, bool* found = nullptr) {
     static const std::unordered_map<std::string, std::pair<std::string, std::string>> error_map = {
         {"ok",                      {"下线成功",                       "Logout Success"}},
+        {"logout_ok",               {"强制下线成功",                    "DM Logout Success"}},
         {"E0000",                   {"登录成功",                       "Login Success"}},
         {"E2531",                   {"用户不存在",                     "Account does not exist"}},
         {"E2532",                   {"两次认证间隔太短，请稍候10秒",    "Authentication interval too short, wait 10s"}},
@@ -38,6 +39,16 @@ static std::string translate_error(const std::string& code, bool* found = nullpt
     }
     if (found) *found = false;
     return "[" + code + "]";
+}
+
+static std::string resolve_error_code(const std::string& ecode, const std::string& error, const std::string& error_msg) {
+    if (ecode.empty() || ecode.find_first_not_of("0123456789") == std::string::npos) {
+        return error_msg.empty() ? error : error_msg;
+    }
+    if (ecode == "E2901") {
+        return error_msg.empty() ? ecode : error_msg;
+    }
+    return ecode;
 }
 
 static void dump_debug_info(const std::string& path, const httplib::Params& params,
@@ -138,7 +149,10 @@ void BitSrunUser::login() {
     } else {
         bool found;
         std::string ploy_msg = get_params_from_response_(res->body, "ploy_msg");
-        std::string error_code = ploy_msg.empty() ? error : ploy_msg;
+        std::string ecode = get_params_from_response_(res->body, "ecode");
+        std::string error_msg = get_params_from_response_(res->body, "error_msg");
+        std::string resolved = resolve_error_code(ecode, error, error_msg);
+        std::string error_code = ploy_msg.empty() ? resolved : ploy_msg;
         std::string msg = translate_error(error_code, &found);
         if (!found) {
             dump_debug_info("/cgi-bin/srun_portal", params, res);
@@ -174,7 +188,9 @@ void BitSrunUser::logout() {
         printf("%s %s (%s)\n", translate_error("ok").c_str(), username_.c_str(), ip_.c_str());
     } else {
         bool found;
-        std::string error_code = error.empty() ? "unknown" : error;
+        std::string ecode = get_params_from_response_(res->body, "ecode");
+        std::string error_msg = get_params_from_response_(res->body, "error_msg");
+        std::string error_code = error.empty() ? std::string("unknown") : resolve_error_code(ecode, error, error_msg);
         std::string msg = translate_error(error_code, &found);
         if (!found) {
             dump_debug_info("/cgi-bin/srun_portal", params, res);
@@ -182,7 +198,40 @@ void BitSrunUser::logout() {
         throw std::runtime_error(msg);
     }
 
-    return;   
+    return;
+}
+
+void BitSrunUser::dm_logout() {
+    auto time_val = static_cast<std::time_t>(std::time(nullptr));
+    std::string time_str = std::to_string(time_val);
+    std::string unbind = "0";
+    std::string sign = sha1(time_str + username_ + ip_ + unbind + time_str);
+
+    httplib::Params params;
+    params.emplace("callback", "jsonp");
+    params.emplace("ip", ip_.c_str());
+    params.emplace("username", username_.c_str());
+    params.emplace("time", time_str);
+    params.emplace("unbind", unbind);
+    params.emplace("sign", sign);
+
+    auto res = client_srun_ptr_->Get("/cgi-bin/rad_user_dm", params, httplib::Headers{});
+    check_response_valid_(res, "Failed to DM logout. Check network connection.");
+
+    std::string error = get_params_from_response_(res->body, "error");
+    if (error == "logout_ok") {
+        printf("%s %s (%s)\n", translate_error("logout_ok").c_str(), username_.c_str(), ip_.c_str());
+    } else {
+        bool found;
+        std::string ecode = get_params_from_response_(res->body, "ecode");
+        std::string error_msg = get_params_from_response_(res->body, "error_msg");
+        std::string error_code = error.empty() ? std::string("unknown") : resolve_error_code(ecode, error, error_msg);
+        std::string msg = translate_error(error_code, &found);
+        if (!found) {
+            dump_debug_info("/cgi-bin/rad_user_dm", params, res);
+        }
+        throw std::runtime_error(msg);
+    }
 }
 
 inline void BitSrunUser::check_response_valid_(const httplib::Result& res, const std::string& error_prompt) {
@@ -226,7 +275,9 @@ std::string BitSrunUser::get_token_() {
     std::string error = get_params_from_response_(res->body, "error");
     if (error != "ok") {
         bool found;
-        std::string msg = translate_error(error, &found);
+        std::string ecode = get_params_from_response_(res->body, "ecode");
+        std::string error_msg = get_params_from_response_(res->body, "error_msg");
+        std::string msg = translate_error(resolve_error_code(ecode, error, error_msg), &found);
         if (!found) {
             dump_debug_info("/cgi-bin/get_challenge", params, res);
         }

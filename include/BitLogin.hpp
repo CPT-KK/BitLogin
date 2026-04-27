@@ -219,7 +219,7 @@ void save_string_to_file(const std::string& data_path, const std::string& data) 
 void arg_parser(int argc, char* argv[], std::string& action, std::string& username, std::string& password) {
 
     argparse::ArgumentParser program(PROJECT_NAME, PROJECT_STR);
-    program.add_argument("-a", "--action").help("Action = login, logout or save.").default_value("login");
+    program.add_argument("-a", "--action").help("Action = login, logout, dm or save.").default_value("login");
     program.add_argument("-u", "--username").help("Your username.");
     program.add_argument("-p", "--password").help("Your password.");
     program.add_argument("-d", "--data").help("The base64 encoded data file storing the username and password.");
@@ -255,7 +255,7 @@ void arg_parser(int argc, char* argv[], std::string& action, std::string& userna
     }
 
     // Check inputs
-    if (action != "login" && action != "logout" && action != "save") {
+    if (action != "login" && action != "logout" && action != "dm" && action != "save") {
         throw std::runtime_error("Unknown action " + action + ".\n");
     }
 

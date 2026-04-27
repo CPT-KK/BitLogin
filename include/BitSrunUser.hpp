@@ -7,6 +7,7 @@
 #include <vector>
 #include <algorithm>
 #include <bitset>
+#include <ctime>
 
 #include <httplib.h>
 
@@ -26,6 +27,7 @@ public:
 
     void login();
     void logout();
+    void dm_logout();
 
 private:
     std::shared_ptr<httplib::Client> client_srun_ptr_;

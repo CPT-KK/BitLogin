@@ -1,4 +1,42 @@
 ﻿#include "BitSrunUser.hpp"
+#include <unordered_map>
+
+static std::string translate_error(const std::string& code) {
+    static const std::unordered_map<std::string, std::pair<std::string, std::string>> error_map = {
+        {"ok",                      {"下线成功",                       "Logout Success"}},
+        {"E0000",                   {"登录成功",                       "Login Success"}},
+        {"E2531",                   {"用户不存在",                     "Account does not exist"}},
+        {"E2532",                   {"两次认证间隔太短，请稍候10秒",    "Authentication interval too short, wait 10s"}},
+        {"E2533",                   {"密码错误次数超限，请5分钟后重试",  "Too many wrong passwords, retry in 5 min"}},
+        {"E2534",                   {"有代理行为被暂时禁用",            "Proxy behavior detected and disabled"}},
+        {"E2553",                   {"帐号或密码错误",                  "Account or password error"}},
+        {"E2606",                   {"用户被禁用",                     "User is disabled"}},
+        {"E2614",                   {"MAC地址绑定错误",                 "MAC address binding error"}},
+        {"E2615",                   {"IP地址绑定错误",                  "IP address binding error"}},
+        {"E2616",                   {"用户已欠费",                     "Account in arrears"}},
+        {"E2620",                   {"已经在线了",                     "Already online"}},
+        {"E2621",                   {"已达到授权人数上限",              "Max concurrent users reached"}},
+        {"E6500",                   {"认证程序未启动",                  "Auth service not started"}},
+        {"E6506",                   {"用户名或密码错误",                "Username or password error"}},
+        {"E6508",                   {"已欠费，请尽快充值",              "Arrears, please recharge"}},
+        {"E6516",                   {"流量已用尽",                     "Data quota exhausted"}},
+        {"E6517",                   {"时长已用尽",                     "Time quota exhausted"}},
+        {"E6520",                   {"帐号已禁用",                     "Account disabled"}},
+        {"ChallengeExpireError",    {"Challenge时间戳错误",             "Challenge timestamp error"}},
+        {"SignError",               {"签名错误",                       "Signature error"}},
+        {"NotOnlineError",          {"当前设备不在线",                  "Device not online"}},
+        {"VcodeError",              {"验证码错误",                      "Verification code error"}},
+        {"SpeedLimitError",         {"认证请求太频繁，请稍后10s",       "Auth requests too frequent, wait 10s"}},
+        {"IpAlreadyOnlineError",    {"本机IP已使用其他账号在线",         "IP already online with another account"}},
+        {"NoResponseDataError",     {"无响应数据",                      "No response data"}},
+        {"MemoryDbError",           {"认证服务无响应",                  "Auth service no response"}},
+    };
+    auto it = error_map.find(code);
+    if (it != error_map.end()) {
+        return "[" + code + " " + it->second.first + " | " + it->second.second + "]";
+    }
+    return "[" + code + "]";
+}
 
 void secure_clear_string(std::string& str) {
     volatile char* p = &str[0];
@@ -40,7 +78,7 @@ BitSrunUser::~BitSrunUser() {};
 void BitSrunUser::login() {
     // if logged in, return
     if (logged_in_user_ == username_) {
-        printf("Warn: User %s has already logged in.\n", username_.c_str());
+        printf("%s %s\n", translate_error("E2620").c_str(), username_.c_str());
         return;
     }
 
@@ -72,23 +110,13 @@ void BitSrunUser::login() {
     // do post
     auto res = client_srun_ptr_->Get("/cgi-bin/srun_portal", params, httplib::Headers{});
     check_response_valid_(res, "Failed to login. Check network connection.");
-    get_params_from_response_(res->body, "access_token");
-    
-    // Available: access_token client_ip ecode error error_msg online_ip ploy_msg srun_ver username wallet_balance sysver
 
-    // check if success
-    if (get_params_from_response_(res->body, "error") == "ok" &&
-        get_params_from_response_(res->body, "username") == username_ &&
-        get_params_from_response_(res->body, "online_ip") != "") {
-            printf("User %s logged in with IP %s.\n", get_params_from_response_(res->body, "username").c_str(), get_params_from_response_(res->body, "online_ip").c_str());
-    } else if (get_params_from_response_(res->body, "ploy_msg") != "") {
-        throw std::runtime_error(get_params_from_response_(res->body, "ploy_msg"));
-    } else if (get_params_from_response_(res->body, "error") != "") {
-        throw std::runtime_error(get_params_from_response_(res->body, "error"));
-    } else if (get_params_from_response_(res->body, "res") != "") {
-        throw std::runtime_error(get_params_from_response_(res->body, "res"));
+    std::string error = get_params_from_response_(res->body, "error");
+    if (error == "ok") {
+        printf("%s %s (%s)\n", translate_error("E0000").c_str(), username_.c_str(), ip_.c_str());
     } else {
-        throw std::runtime_error("Seems like login failed and Srun server returns an unrecognized message. Check network connection.");
+        std::string ploy_msg = get_params_from_response_(res->body, "ploy_msg");
+        throw std::runtime_error(ploy_msg.empty() ? translate_error(error) : translate_error(ploy_msg));
     }
 
     secure_clear_string(password_);
@@ -100,7 +128,7 @@ void BitSrunUser::login() {
 void BitSrunUser::logout() {
     // if not logged in, return
     if (logged_in_user_ == "") {
-        printf("User %s has not logged in.\n", username_.c_str());
+        printf("%s %s\n", translate_error("NotOnlineError").c_str(), username_.c_str());
         return;
     }
 
@@ -114,7 +142,12 @@ void BitSrunUser::logout() {
     auto res = client_srun_ptr_->Get("/cgi-bin/srun_portal", params, httplib::Headers{});
     check_response_valid_(res, "Failed to logout. Check network connection.");
 
-    printf("User %s logged out from IP %s.\n", username_.c_str(), get_params_from_response_(res->body, "online_ip").c_str());
+    std::string error = get_params_from_response_(res->body, "error");
+    if (error == "ok") {
+        printf("%s %s (%s)\n", translate_error("ok").c_str(), username_.c_str(), ip_.c_str());
+    } else {
+        throw std::runtime_error(error.empty() ? translate_error("unknown") : translate_error(error));
+    }
 
     return;   
 }
@@ -156,6 +189,15 @@ std::string BitSrunUser::get_token_() {
 
     auto res = client_srun_ptr_->Get("/cgi-bin/get_challenge", params, httplib::Headers{});
     check_response_valid_(res, "Failed to get token from 10.0.0.55. Check network connection.");
+
+    std::string error = get_params_from_response_(res->body, "error");
+    if (error != "ok") {
+        throw std::runtime_error(translate_error(error));
+    }
+
+    if (ip_.empty()) {
+        ip_ = get_params_from_response_(res->body, "client_ip");
+    }
 
     return get_params_from_response_(res->body, "challenge");
 };

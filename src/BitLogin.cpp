@@ -36,6 +36,5 @@ int main(int argc, char *argv[]) {
     // Cleaning
     secure_clear_string(username);
     secure_clear_string(password);
-    printf("Exiting...\n");
     return ret; 
 }

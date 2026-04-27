@@ -1,7 +1,7 @@
 ﻿#include "BitSrunUser.hpp"
 #include <unordered_map>
 
-static std::string translate_error(const std::string& code) {
+static std::string translate_error(const std::string& code, bool* found = nullptr) {
     static const std::unordered_map<std::string, std::pair<std::string, std::string>> error_map = {
         {"ok",                      {"下线成功",                       "Logout Success"}},
         {"E0000",                   {"登录成功",                       "Login Success"}},
@@ -33,9 +33,30 @@ static std::string translate_error(const std::string& code) {
     };
     auto it = error_map.find(code);
     if (it != error_map.end()) {
+        if (found) *found = true;
         return "[" + code + " " + it->second.first + " | " + it->second.second + "]";
     }
+    if (found) *found = false;
     return "[" + code + "]";
+}
+
+static void dump_debug_info(const std::string& path, const httplib::Params& params,
+                             const httplib::Result& res) {
+    fprintf(stderr, "\n--- Debug Info (unknown error) ---\n");
+    fprintf(stderr, "Request: GET %s\n", path.c_str());
+    fprintf(stderr, "Params:\n");
+    for (const auto& [key, value] : params) {
+        fprintf(stderr, "  %s: %s\n", key.c_str(), value.c_str());
+    }
+    if (res) {
+        fprintf(stderr, "Response status: %d\n", res->status);
+        fprintf(stderr, "Response headers:\n");
+        for (const auto& [key, value] : res->headers) {
+            fprintf(stderr, "  %s: %s\n", key.c_str(), value.c_str());
+        }
+        fprintf(stderr, "Response body: %s\n", res->body.c_str());
+    }
+    fprintf(stderr, "--- End Debug Info ---\n\n");
 }
 
 void secure_clear_string(std::string& str) {
@@ -115,8 +136,14 @@ void BitSrunUser::login() {
     if (error == "ok") {
         printf("%s %s (%s)\n", translate_error("E0000").c_str(), username_.c_str(), ip_.c_str());
     } else {
+        bool found;
         std::string ploy_msg = get_params_from_response_(res->body, "ploy_msg");
-        throw std::runtime_error(ploy_msg.empty() ? translate_error(error) : translate_error(ploy_msg));
+        std::string error_code = ploy_msg.empty() ? error : ploy_msg;
+        std::string msg = translate_error(error_code, &found);
+        if (!found) {
+            dump_debug_info("/cgi-bin/srun_portal", params, res);
+        }
+        throw std::runtime_error(msg);
     }
 
     secure_clear_string(password_);
@@ -146,7 +173,13 @@ void BitSrunUser::logout() {
     if (error == "ok") {
         printf("%s %s (%s)\n", translate_error("ok").c_str(), username_.c_str(), ip_.c_str());
     } else {
-        throw std::runtime_error(error.empty() ? translate_error("unknown") : translate_error(error));
+        bool found;
+        std::string error_code = error.empty() ? "unknown" : error;
+        std::string msg = translate_error(error_code, &found);
+        if (!found) {
+            dump_debug_info("/cgi-bin/srun_portal", params, res);
+        }
+        throw std::runtime_error(msg);
     }
 
     return;   
@@ -192,7 +225,12 @@ std::string BitSrunUser::get_token_() {
 
     std::string error = get_params_from_response_(res->body, "error");
     if (error != "ok") {
-        throw std::runtime_error(translate_error(error));
+        bool found;
+        std::string msg = translate_error(error, &found);
+        if (!found) {
+            dump_debug_info("/cgi-bin/get_challenge", params, res);
+        }
+        throw std::runtime_error(msg);
     }
 
     if (ip_.empty()) {

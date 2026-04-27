@@ -145,10 +145,10 @@ void BitSrunUser::login() {
     // do post
     httplib::Result res = client_srun_ptr_->Get("/cgi-bin/srun_portal", params, httplib::Headers{});
     check_response_valid_(res, "Failed to login. Check network connection.");
+    if (debug_) { dump_debug_info("/cgi-bin/srun_portal", params, res); }
 
     std::string error = get_params_from_response_(res->body, "error");
     if (error == "ok") {
-        if (debug_) { dump_debug_info("/cgi-bin/srun_portal", params, res); }
         printf("%s %s (%s)\n", translate_error("E0000").c_str(), username_.c_str(), ip_.c_str());
     } else {
         bool found;
@@ -158,7 +158,7 @@ void BitSrunUser::login() {
         std::string resolved = resolve_error_code(ecode, error, error_msg);
         std::string error_code = ploy_msg.empty() ? resolved : ploy_msg;
         std::string msg = translate_error(error_code, &found);
-        if (!found || debug_) {
+        if (!found) {
             dump_debug_info("/cgi-bin/srun_portal", params, res);
         }
         throw std::runtime_error(msg);
@@ -186,10 +186,10 @@ void BitSrunUser::logout() {
 
     httplib::Result res = client_srun_ptr_->Get("/cgi-bin/srun_portal", params, httplib::Headers{});
     check_response_valid_(res, "Failed to logout. Check network connection.");
+    if (debug_) { dump_debug_info("/cgi-bin/srun_portal", params, res); }
 
     std::string error = get_params_from_response_(res->body, "error");
     if (error == "ok") {
-        if (debug_) { dump_debug_info("/cgi-bin/srun_portal", params, res); }
         printf("%s %s (%s)\n", translate_error("ok").c_str(), username_.c_str(), ip_.c_str());
     } else {
         bool found;
@@ -197,7 +197,7 @@ void BitSrunUser::logout() {
         std::string error_msg = get_params_from_response_(res->body, "error_msg");
         std::string error_code = error.empty() ? std::string("unknown") : resolve_error_code(ecode, error, error_msg);
         std::string msg = translate_error(error_code, &found);
-        if (!found || debug_) {
+        if (!found) {
             dump_debug_info("/cgi-bin/srun_portal", params, res);
         }
         throw std::runtime_error(msg);
@@ -220,12 +220,12 @@ void BitSrunUser::dm_logout() {
     params.emplace("unbind", unbind);
     params.emplace("sign", sign);
 
-    auto res = client_srun_ptr_->Get("/cgi-bin/rad_user_dm", params, httplib::Headers{});
+    httplib::Result res = client_srun_ptr_->Get("/cgi-bin/rad_user_dm", params, httplib::Headers{});
     check_response_valid_(res, "Failed to DM logout. Check network connection.");
+    if (debug_) { dump_debug_info("/cgi-bin/rad_user_dm", params, res); }
 
     std::string error = get_params_from_response_(res->body, "error");
     if (error == "logout_ok") {
-        if (debug_) { dump_debug_info("/cgi-bin/rad_user_dm", params, res); }
         printf("%s %s (%s)\n", translate_error("logout_ok").c_str(), username_.c_str(), ip_.c_str());
     } else {
         bool found;
@@ -233,7 +233,7 @@ void BitSrunUser::dm_logout() {
         std::string error_msg = get_params_from_response_(res->body, "error_msg");
         std::string error_code = error.empty() ? std::string("unknown") : resolve_error_code(ecode, error, error_msg);
         std::string msg = translate_error(error_code, &found);
-        if (!found || debug_) {
+        if (!found) {
             dump_debug_info("/cgi-bin/rad_user_dm", params, res);
         }
         throw std::runtime_error(msg);
@@ -279,6 +279,7 @@ std::string BitSrunUser::get_token_() {
 
     httplib::Result res = client_srun_ptr_->Get("/cgi-bin/get_challenge", params, httplib::Headers{});
     check_response_valid_(res, "Failed to get token from 10.0.0.55. Check network connection.");
+    if (debug_) { dump_debug_info("/cgi-bin/get_challenge", params, res); }
 
     std::string error = get_params_from_response_(res->body, "error");
     if (error != "ok") {
@@ -286,13 +287,11 @@ std::string BitSrunUser::get_token_() {
         std::string ecode = get_params_from_response_(res->body, "ecode");
         std::string error_msg = get_params_from_response_(res->body, "error_msg");
         std::string msg = translate_error(resolve_error_code(ecode, error, error_msg), &found);
-        if (!found || debug_) {
+        if (!found) {
             dump_debug_info("/cgi-bin/get_challenge", params, res);
         }
         throw std::runtime_error(msg);
     }
-
-    if (debug_) { dump_debug_info("/cgi-bin/get_challenge", params, res); }
 
     if (ip_.empty()) {
         ip_ = get_params_from_response_(res->body, "client_ip");

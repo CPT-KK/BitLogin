@@ -245,7 +245,7 @@ void arg_parser(int argc, char* argv[], std::string& action, std::string& userna
         username = program.get<std::string>("--username");
         password = get_password_from_console("Please enter your password: ", false);
     } else if (program.present("--password")) {
-        username = program.get<std::string>("--password");
+        password = program.get<std::string>("--password");
         std::cout << "Please enter your username: ";
         std::cin >> username;
     } else {

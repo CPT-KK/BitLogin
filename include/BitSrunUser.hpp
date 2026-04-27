@@ -43,7 +43,7 @@ private:
     std::string get_token_();
 
     std::string fkbase64(const std::string& raw_s);
-    int ordat(const std::string& msg, size_t idx);
+    unsigned int ordat(const std::string& msg, size_t idx);
     std::vector<uint64_t> sencode(const std::string& msg, bool key);
     std::string lencode(std::vector<uint64_t>& msg, bool key);
     std::string xencode(const std::string& msg, const std::string& key);

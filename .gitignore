@@ -1,3 +1,6 @@
 build/
 .vscode/
-external
+.claude/
+
+CLAUDE.md
+Srun_Protocol_Spec.md

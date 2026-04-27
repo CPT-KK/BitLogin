@@ -5,13 +5,14 @@ int main(int argc, char *argv[]) {
     std::string action;
     std::string username;
     std::string password;
+    bool debug = false;
 
-    try { 
+    try {
         // Parse input arguments
-        arg_parser(argc, argv, action, username, password);
+        arg_parser(argc, argv, action, username, password, debug);
 
         // Do action
-        BitSrunUser user(username, password);
+        BitSrunUser user(username, password, debug);
         if (action == "login") {
             user.login();
         } else if (action == "logout") {

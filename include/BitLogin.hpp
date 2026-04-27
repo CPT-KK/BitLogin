@@ -15,7 +15,7 @@
 // Declaration
 std::string get_password_from_console(const char* prompt, bool show_asterisk = true);
 void get_userpass_from_file(const std::string& data_path, std::string& username, std::string& password);
-void arg_parser(int argc, char* argv[], std::string& action, std::string& username, std::string& password);
+void arg_parser(int argc, char* argv[], std::string& action, std::string& username, std::string& password, bool& debug);
 
 #ifdef _WIN32
 #include <windows.h>
@@ -216,13 +216,14 @@ void save_string_to_file(const std::string& data_path, const std::string& data) 
     data_file.close();
 }
 
-void arg_parser(int argc, char* argv[], std::string& action, std::string& username, std::string& password) {
+void arg_parser(int argc, char* argv[], std::string& action, std::string& username, std::string& password, bool& debug) {
 
     argparse::ArgumentParser program(PROJECT_NAME, PROJECT_STR);
     program.add_argument("-a", "--action").help("Action = login, logout, dm or save.").default_value("login");
     program.add_argument("-u", "--username").help("Your username.");
     program.add_argument("-p", "--password").help("Your password.");
     program.add_argument("-d", "--data").help("The base64 encoded data file storing the username and password.");
+    program.add_argument("--debug").default_value(false).implicit_value(true).help("Print debug info for every request.");
     program.add_description(PROJECT_DEF);
     program.add_epilog(PROJECT_COPY);
 
@@ -235,6 +236,7 @@ void arg_parser(int argc, char* argv[], std::string& action, std::string& userna
     program.parse_args(argc, argv);
 
     // Get input arguments
+    debug = program.get<bool>("--debug");
     action = program.get<std::string>("--action");
     if (program.present("--data")) {
         get_userpass_from_file(program.get<std::string>("--data"), username, password);

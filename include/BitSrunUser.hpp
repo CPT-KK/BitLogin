@@ -22,7 +22,7 @@ void secure_clear_string(std::string& str);
 
 class BitSrunUser {
 public:
-    BitSrunUser(const std::string &username, const std::string &password);
+    BitSrunUser(const std::string &username, const std::string &password, bool debug = false);
     ~BitSrunUser();
 
     void login();
@@ -37,6 +37,7 @@ private:
     std::string ac_id_;
     std::string ip_;
     std::string logged_in_user_;
+    bool debug_;
 
     inline void check_response_valid_(const httplib::Result& res, const std::string& error_prompt);
     inline std::string get_params_from_url_(const std::string& url, const std::string& paramName);

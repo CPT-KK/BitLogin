@@ -17,9 +17,7 @@ This is an C++ implementation of BIT Srun login/logout client.
 
 ### 下载与安装
 
-右侧 [Release](https://github.com/CPT-KK/BitLogin/releases) 页面找到对应自己系统架构的可执行文件
-
-> macOS 的用户请选择含 `Darwin` 的可执行文件，并注意自己的系统架构是 `x86_64` 还是 `arm64`
+右侧 [Release](https://github.com/CPT-KK/BitLogin/releases) 页面找到对应自己系统（Windows/Linux/macOS）和处理器架构（x64/aarch64/armv7等）的可执行文件
 
 ### 程序的调用格式
 

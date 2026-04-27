@@ -15,9 +15,6 @@
 #include "hmac.h"
 #include "md5.h"
 
-#define _TYPE_CONST "1"
-#define _N_CONST "200"
-
 void secure_clear_string(std::string& str);
 
 class BitSrunUser {

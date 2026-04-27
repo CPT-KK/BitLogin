@@ -189,7 +189,7 @@ void get_userpass_from_file(const std::string& data_path, std::string& username,
 
     // get username and password
     std::string decoded_string = base64::from_base64(encoded_string);
-    auto seperator = decoded_string.find("\n");
+    std::string::size_type seperator = decoded_string.find("\n");
     if (seperator == std::string::npos) {
         throw std::runtime_error("Invalid data file.\n");
     }

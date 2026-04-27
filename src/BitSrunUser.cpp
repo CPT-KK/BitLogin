@@ -32,7 +32,7 @@ static std::string translate_error(const std::string& code, bool* found = nullpt
         {"NoResponseDataError",     {"无响应数据",                      "No response data"}},
         {"MemoryDbError",           {"认证服务无响应",                  "Auth service no response"}},
     };
-    auto it = error_map.find(code);
+    std::unordered_map<std::string, std::pair<std::string, std::string>>::const_iterator it = error_map.find(code);
     if (it != error_map.end()) {
         if (found) *found = true;
         return "[" + code + " " + it->second.first + " | " + it->second.second + "]";
@@ -86,7 +86,7 @@ BitSrunUser::BitSrunUser(const std::string &username, const std::string &passwor
     client_srun_ptr_->set_write_timeout(5, 0);
 
     // initial request to get ac_id
-    auto res_srun = client_srun_ptr_->Get("/");
+    httplib::Result res_srun = client_srun_ptr_->Get("/");
     check_response_valid_(res_srun, "HTTP error: " + httplib::to_string(res_srun.error()));
 
     // get ac_id
@@ -108,6 +108,9 @@ BitSrunUser::BitSrunUser(const std::string &username, const std::string &passwor
 BitSrunUser::~BitSrunUser() {};
 
 void BitSrunUser::login() {
+    constexpr const char* SRUN_TYPE = "1";
+    constexpr const char* SRUN_N = "200";
+
     // if logged in, return
     if (logged_in_user_ == username_) {
         printf("%s %s\n", translate_error("E2620").c_str(), username_.c_str());
@@ -124,15 +127,15 @@ void BitSrunUser::login() {
     params.emplace("action", "login");
     params.emplace("ac_id", ac_id_.c_str());
     params.emplace("ip", ip_.c_str());
-    params.emplace("type", _TYPE_CONST);
-    params.emplace("n", _N_CONST);
+    params.emplace("type", SRUN_TYPE);
+    params.emplace("n", SRUN_N);
 
     // prepare login data to generate checksum
     std::string data = "{\"username\":\"" + username_ + "\",\"password\":\"" + password_ + "\",\"acid\":\"" + ac_id_ + "\",\"ip\":\"" + ip_ + "\",\"enc_ver\":\"srun_bx1\"}";
 
     std::string hmd5 = hmac<MD5>(password_, token);
     std::string info = "{SRBX1}" + fkbase64(xencode(data, token));
-    std::string chksum = sha1(token + username_ + token + hmd5 + token + ac_id_ + token + ip_ + token + _N_CONST + token + _TYPE_CONST + token + info);
+    std::string chksum = sha1(token + username_ + token + hmd5 + token + ac_id_ + token + ip_ + token + SRUN_N + token + SRUN_TYPE + token + info);
 
     // update params with login data, checksum, and encrypted password
     params.emplace("password", "{MD5}" + hmd5);
@@ -140,7 +143,7 @@ void BitSrunUser::login() {
     params.emplace("info", info);
 
     // do post
-    auto res = client_srun_ptr_->Get("/cgi-bin/srun_portal", params, httplib::Headers{});
+    httplib::Result res = client_srun_ptr_->Get("/cgi-bin/srun_portal", params, httplib::Headers{});
     check_response_valid_(res, "Failed to login. Check network connection.");
 
     std::string error = get_params_from_response_(res->body, "error");
@@ -181,7 +184,7 @@ void BitSrunUser::logout() {
     params.emplace("ip", ip_.c_str());
     params.emplace("username", username_.c_str());
 
-    auto res = client_srun_ptr_->Get("/cgi-bin/srun_portal", params, httplib::Headers{});
+    httplib::Result res = client_srun_ptr_->Get("/cgi-bin/srun_portal", params, httplib::Headers{});
     check_response_valid_(res, "Failed to logout. Check network connection.");
 
     std::string error = get_params_from_response_(res->body, "error");
@@ -204,7 +207,7 @@ void BitSrunUser::logout() {
 }
 
 void BitSrunUser::dm_logout() {
-    auto time_val = static_cast<std::time_t>(std::time(nullptr));
+    std::time_t time_val = static_cast<std::time_t>(std::time(nullptr));
     std::string time_str = std::to_string(time_val);
     std::string unbind = "0";
     std::string sign = sha1(time_str + username_ + ip_ + unbind + time_str);
@@ -260,7 +263,7 @@ std::string BitSrunUser::get_login_status_() {
         { "callback", "jsonp" },
     };
 
-    auto res = client_srun_ptr_->Get("/cgi-bin/rad_user_info", params, httplib::Headers{});
+    httplib::Result res = client_srun_ptr_->Get("/cgi-bin/rad_user_info", params, httplib::Headers{});
     check_response_valid_(res, "Failed to get status from 10.0.0.55. Check network connection.");
 
     if (debug_) { dump_debug_info("/cgi-bin/rad_user_info", params, res); }
@@ -274,7 +277,7 @@ std::string BitSrunUser::get_token_() {
     params.emplace("username", username_.c_str());
     params.emplace("ip", ip_.c_str());
 
-    auto res = client_srun_ptr_->Get("/cgi-bin/get_challenge", params, httplib::Headers{});
+    httplib::Result res = client_srun_ptr_->Get("/cgi-bin/get_challenge", params, httplib::Headers{});
     check_response_valid_(res, "Failed to get token from 10.0.0.55. Check network connection.");
 
     std::string error = get_params_from_response_(res->body, "error");
@@ -316,7 +319,7 @@ std::string BitSrunUser::fkbase64(const std::string& raw_s) {
 
     std::string result;
     for (char c : base64_encoded) {
-        auto pos = base64_chars.find(c);
+        std::string::size_type pos = base64_chars.find(c);
         result += (pos != std::string::npos) ? custom_chars[pos] : c;
     }
 

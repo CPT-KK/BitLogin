@@ -23,16 +23,17 @@ This is an C++ implementation of BIT Srun login/logout client.
 
 ### 程序的调用格式
 
-`BitLogin [--help] [--version] [--action VAR] [--username VAR] [--password VAR] [--data VAR]`
+`BitLogin [--help] [--version] [--action VAR] [--username VAR] [--password VAR] [--data VAR] [--debug]`
 
 其中参数说明如下：
 
 - `-h`, 或 `--help`: 打印帮助信息
 - `-v`, 或 `--version`: 打印版本信息
-- `-a`, 或 `--action`: 指定动作为 login，save，或 logout。未指定时，默认 login
+- `-a`, 或 `--action`: 指定动作为 login，logout，dm 或 save。未指定时，默认 login
 - `-d`, 或 `--data`: 从用户给定的 base64 编码文件中加载用户名和密码。指定该参数时，将会忽略 `-u` 和 `-p` 参数的输入（若有）
 - `-u`, 或 `--username`: BIT 用户名，未指定此参数且未指定 `-d` 时，程序会要求用户输入
 - `-p`, 或 `--password`: BIT 密码，未指定此参数且未指定 `-d` 时，程序会要求用户输入（密码输入不显示在控制台上）
+- `--debug`: 输出每次请求的调试信息（Request、Response），用于排查问题
 
 **一般来说，使用 `-d`，或者 `-u` 和 `-p`就可以了**
 
@@ -40,6 +41,8 @@ This is an C++ implementation of BIT Srun login/logout client.
 
 - `BitLogin -a login -u 1120240000 -p abcdef123456`
 - `BitLogin --action logout --username 1120240000 --password abcdef123456`
+- `BitLogin -a dm -u 1120240000 -p abcdef123456`
+- `BitLogin -a login -u 1120240000 -p abcdef123456 --debug`
 - `BitLogin -u 1120240000`，然后输入密码
 - `BitLogin -d D:/data.txt`，其中经 base64 编码后 `data.txt` 的内容为：
 

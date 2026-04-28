@@ -15,11 +15,11 @@ This is an C++ implementation of BIT Srun login/logout client.
 
 > 本仓库中含有的 `Makefile` 文件只能用于配合 Openwrt SDK 在 Openwrt 软路由系统上进行编译。具体请参考 [Openwrt SDK](https://openwrt.org/docs/guide-developer/using_the_sdk) 的使用方法和 [OpenWrt 手动编译 ipk](https://blog.csdn.net/CoolBoySilverBullet/article/details/121077482)
 
-### 下载与安装
+### 下载安装
 
 右侧 [Release](https://github.com/CPT-KK/BitLogin/releases) 页面找到对应自己系统（Windows/Linux/macOS）和处理器架构（x64/aarch64/armv7等）的可执行文件。
 
-### 程序的调用格式
+### 程序调用
 
 **程序在命令行中运行**，没有图形界面。
 

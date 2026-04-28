@@ -53,6 +53,8 @@ This is an C++ implementation of BIT Srun login/logout client.
 
 ### 示例
 
+示例中均忽略了 `./` 或 `.\` 前缀，需根据系统和环境自行添加。
+
 - `BitLogin -a login -u 1120240000 -p abcdef123456`
 - `BitLogin --action logout --username 1120240000 --password abcdef123456`
 - `BitLogin -a dm -u 1120240000 -p abcdef123456`

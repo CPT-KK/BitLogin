@@ -17,9 +17,27 @@ This is an C++ implementation of BIT Srun login/logout client.
 
 ### 下载与安装
 
-右侧 [Release](https://github.com/CPT-KK/BitLogin/releases) 页面找到对应自己系统（Windows/Linux/macOS）和处理器架构（x64/aarch64/armv7等）的可执行文件
+右侧 [Release](https://github.com/CPT-KK/BitLogin/releases) 页面找到对应自己系统（Windows/Linux/macOS）和处理器架构（x64/aarch64/armv7等）的可执行文件。
 
 ### 程序的调用格式
+
+**程序在命令行中运行**，没有图形界面。
+
+在 Windows 上，双击 exe 文件运行会闪退。需要先打开命令提示符（cmd）或 PowerShell，切换到程序所在目录后，再运行。
+
+在 Windows 上，直接在 PowerShell 中尝试输入 `BitLogin ...` 启动程序，会提示：
+
+> 无法将“BitLogin”项识别为 cmdlet、函数、脚本文件或可运行程序的名称。请检查 ......
+>
+> ......
+>
+> ...... 找不到命令 BitLogin，但它确实存在于当前位置。默认情况下，Windows PowerShell 不会从当前位置加载命令 ......
+
+解决方法是在命令行中输入 `.\BitLogin ...` 来运行程序。在命令提示符中，不会出现此问题，可直接输入 `BitLogin ...` 来运行程序。
+
+在 Linux 和 macOS 上，确保程序在运行前具有可执行权限（`chmod +x BitLogin`），然后在命令行中输入 `./BitLogin ...` 来运行程序。
+
+程序的调用格式如下：
 
 `BitLogin [--help] [--version] [--action VAR] [--username VAR] [--password VAR] [--data VAR] [--debug]`
 
@@ -32,8 +50,6 @@ This is an C++ implementation of BIT Srun login/logout client.
 - `-u`, 或 `--username`: BIT 用户名，未指定此参数且未指定 `-d` 时，程序会要求用户输入
 - `-p`, 或 `--password`: BIT 密码，未指定此参数且未指定 `-d` 时，程序会要求用户输入（密码输入不显示在控制台上）
 - `--debug`: 输出每次请求的调试信息（Request、Response），用于排查问题
-
-**一般来说，使用 `-d`，或者 `-u` 和 `-p`就可以了**
 
 ### 示例
 
@@ -58,8 +74,8 @@ This is an C++ implementation of BIT Srun login/logout client.
 
 ### 如何提供 `-d` 需要的 base64 编码的文件
 
-1. 使用程序的 `-a save` 功能，示例如上
-2. 找一个在线 base64 编解码的网站，例如 [base64encode](https://www.base64encode.org/)。或者，在 Windows 下可以通过命令行的 `certutil` 工具来进行编码，参考 [Microsoft certutil](https://learn.microsoft.com/zh-cn/windows-server/administration/windows-commands/certutil) 和 [Windows下base64编解码命令](https://blog.csdn.net/zhaoxf4/article/details/106957388)。编码前的文本有两行，第一行为用户名，第二行为密码，用换行符分隔
+1. 使用程序的 `-a save` 功能，示例如上；
+2. 找一个在线 base64 编解码的网站，例如 [base64encode](https://www.base64encode.org/)。或者，在 Windows 下可以通过命令行的 `certutil` 工具来进行编码，参考 [Microsoft certutil](https://learn.microsoft.com/zh-cn/windows-server/administration/windows-commands/certutil) 和 [Windows下base64编解码命令](https://blog.csdn.net/zhaoxf4/article/details/106957388)。编码前的文本有两行，第一行为用户名，第二行为密码，用换行符分隔。
 
 ## For development
 
